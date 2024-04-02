@@ -12,6 +12,7 @@ add_executable(ShaderMaker
 # OpenGL
 find_package(OpenGL REQUIRED)
 target_include_directories(ShaderMaker PRIVATE ${OPENGL_INCLUDE_DIR})
+message("OpenGL Include Dir: ${OPENGL_INCLUDE_DIR}")
 target_link_libraries(ShaderMaker PRIVATE ${OPENGL_LIBRARIES})
 
 # SDL

@@ -2,10 +2,13 @@
 // Created by angus.goucher on 4/2/2024.
 //
 
+#define GL_SILENCE_DEPRECATION
+#define GL_GLEXT_PROTOTYPES
 #include <string>
 #include <fstream>
 #include <sstream>
 #include <SDL_opengl.h>
+#include <OpenGL/gl.h>
 
 #include "shader.h"
 
@@ -18,7 +21,7 @@ namespace sm {
         fs = glCreateShader(GL_FRAGMENT_SHADER);
 
         length = fragment.size();
-        glShaderSource();
+        // glShaderSource();
     }
 
     /**
