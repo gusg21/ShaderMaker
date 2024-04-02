@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3)
+cmake_minimum_required(VERSION 3.21)
 project(ShaderMaker)
 include(cmake/CPM.cmake)
 set(CMAKE_CXX_STANDARD 17)
@@ -19,7 +19,6 @@ CPMAddPackage("gh:libsdl-org/SDL#release-2.30.2")
 target_link_libraries(ShaderMaker PRIVATE SDL2::SDL2main)
 target_link_libraries(ShaderMaker PRIVATE SDL2::SDL2)
 if (WIN32)
-
     add_custom_command(
             TARGET ShaderMaker POST_BUILD
             COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:SDL2::SDL2>" "$<TARGET_FILE_DIR:ShaderMaker>"
