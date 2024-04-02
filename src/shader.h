@@ -11,6 +11,9 @@ namespace sm {
     class Shader {
     public:
         Shader(const std::string &fragment, const std::string &vertex);
+
+    private:
+        uint32_t program;
     };
 
     Shader* loadShader(const std::string &fragmentFile, const std::string &vertexFile);
