@@ -15,6 +15,12 @@ target_include_directories(ShaderMaker PRIVATE ${OPENGL_INCLUDE_DIR})
 message("OpenGL Include Dir: ${OPENGL_INCLUDE_DIR}")
 target_link_libraries(ShaderMaker PRIVATE ${OPENGL_LIBRARIES})
 
+# Assimp
+set(ASSIMP_INSTALL OFF)
+set(BUILD_SHARED_LIBS OFF)
+CPMAddPackage("gh:assimp/assimp#v5.3.1")
+target_link_libraries(ShaderMaker PRIVATE Assimp::Assimp)
+
 # SDL
 CPMAddPackage("gh:libsdl-org/SDL#release-2.30.2")
 target_link_libraries(ShaderMaker PRIVATE SDL2::SDL2main)

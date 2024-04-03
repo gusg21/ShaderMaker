@@ -12,6 +12,8 @@ namespace sm {
     public:
         Shader(const std::string &fragment, const std::string &vertex);
 
+        void use();
+
     private:
         uint32_t program;
     };
