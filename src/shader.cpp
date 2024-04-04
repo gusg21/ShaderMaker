@@ -2,14 +2,12 @@
 // Created by angus.goucher on 4/2/2024.
 //
 
-#define GL_SILENCE_DEPRECATION
-#define GL_GLEXT_PROTOTYPES
 #include <string>
 #include <fstream>
 #include <sstream>
 #include <SDL.h>
-#include <SDL_opengl.h>
-#include <OpenGL/gl.h>
+
+#include "external/glad.h"
 
 #include "shader.h"
 
@@ -52,8 +50,8 @@ namespace sm {
             GLint infoLogLength;
             glGetShaderiv(fs, GL_INFO_LOG_LENGTH, &infoLogLength);
 
-            GLchar* infoLog = new GLchar[infoLogLength + 1];
-            glGetShaderInfoLog(fs, infoLogLength, NULL, infoLog);
+            auto* infoLog = new GLchar[infoLogLength + 1];
+            glGetShaderInfoLog(fs, infoLogLength, nullptr, infoLog);
 
             SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "%s\n%s", "Failed to compile fragment shader.", infoLog);
 
