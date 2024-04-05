@@ -9,6 +9,9 @@
 
 #include "external/glad.h"
 
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+
 #include "shader.h"
 
 namespace sm {
@@ -22,8 +25,8 @@ namespace sm {
 
         // Compile vertex shader
         length = vertex.size();
-        const char* vertexCstr = vertex.c_str();
-        glShaderSource(vs, 1, (const GLchar **)&vertexCstr, &length);
+        const char *vertexCstr = vertex.c_str();
+        glShaderSource(vs, 1, (const GLchar **) &vertexCstr, &length);
         glCompileShader(vs);
 
         glGetShaderiv(vs, GL_COMPILE_STATUS, &status);
@@ -31,7 +34,7 @@ namespace sm {
             GLint infoLogLength;
             glGetShaderiv(vs, GL_INFO_LOG_LENGTH, &infoLogLength);
 
-            GLchar* infoLog = new GLchar[infoLogLength + 1];
+            GLchar *infoLog = new GLchar[infoLogLength + 1];
             glGetShaderInfoLog(vs, infoLogLength, NULL, infoLog);
 
             SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "%s\n%s", "Failed to compile vertex shader.", infoLog);
@@ -41,8 +44,8 @@ namespace sm {
 
         // Compile fragment shader
         length = fragment.size();
-        const char* fragmentCstr = fragment.c_str();
-        glShaderSource(fs, 1, (const GLchar **)&fragmentCstr, &length);
+        const char *fragmentCstr = fragment.c_str();
+        glShaderSource(fs, 1, (const GLchar **) &fragmentCstr, &length);
         glCompileShader(fs);
 
         glGetShaderiv(fs, GL_COMPILE_STATUS, &status);
@@ -50,7 +53,7 @@ namespace sm {
             GLint infoLogLength;
             glGetShaderiv(fs, GL_INFO_LOG_LENGTH, &infoLogLength);
 
-            auto* infoLog = new GLchar[infoLogLength + 1];
+            auto *infoLog = new GLchar[infoLogLength + 1];
             glGetShaderInfoLog(fs, infoLogLength, nullptr, infoLog);
 
             SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "%s\n%s", "Failed to compile fragment shader.", infoLog);
@@ -64,6 +67,47 @@ namespace sm {
         glAttachShader(this->program, fs);
         glLinkProgram(this->program);
 
+    }
+
+    void Shader::use() const {
+        glUseProgram(program);
+    }
+
+    void Shader::setInt(const std::string& name, int v) const
+    {
+        glUniform1i(glGetUniformLocation(program, name.c_str()), v);
+    }
+    void Shader::setFloat(const std::string& name, float v) const
+    {
+        glUniform1f(glGetUniformLocation(program, name.c_str()), v);
+    }
+    void Shader::setVec2(const std::string& name, float x, float y) const
+    {
+        glUniform2f(glGetUniformLocation(program, name.c_str()), x, y);
+    }
+    void Shader::setVec2(const std::string& name, const glm::vec2& v) const
+    {
+        setVec2(name, v.x, v.y);
+    }
+    void Shader::setVec3(const std::string& name, float x, float y, float z) const
+    {
+        glUniform3f(glGetUniformLocation(program, name.c_str()), x, y, z);
+    }
+    void Shader::setVec3(const std::string& name, const glm::vec3& v) const
+    {
+        setVec3(name, v.x, v.y, v.z);
+    }
+    void Shader::setVec4(const std::string& name, float x, float y, float z, float w) const
+    {
+        glUniform4f(glGetUniformLocation(program, name.c_str()), x, y, z, w);
+    }
+    void Shader::setVec4(const std::string& name, const glm::vec4& v) const
+    {
+        setVec4(name, v.x, v.y, v.z, v.w);
+    }
+    void Shader::setMat4(const std::string& name, const glm::mat4& m) const
+    {
+        glUniformMatrix4fv(glGetUniformLocation(program, name.c_str()), 1, GL_FALSE, glm::value_ptr(m));
     }
 
     /**

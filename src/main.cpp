@@ -2,6 +2,17 @@
 #include "SDL.h"
 
 #include "shader.h"
+#include "model.h"
+#include "camera.h"
+#include "transform.h"
+#include "texture.h"
+
+struct Material {
+    float ambient = 1.0f;
+    float diffuse = 0.5f;
+    float specular = 0.5f;
+    float shininess = 128.f;
+} material;
 
 int main(int argc, char *argv[])
 {
@@ -12,6 +23,7 @@ int main(int argc, char *argv[])
         SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to initialize SDL: %s", SDL_GetError());
         return 1;
     }
+
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
     SDL_GL_SetAttribute(SDL_GL_ACCELERATED_VISUAL, 1);
     SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
@@ -31,13 +43,15 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    SDL_GL_LoadLibrary(NULL); // Load OpenGL
+    // Load OpenGL Context
+    SDL_GL_LoadLibrary(nullptr);
     SDL_GLContext context = SDL_GL_CreateContext(window);
     if (context == nullptr) {
         SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to create OpenGL context: %s", SDL_GetError());
         return 1;
     }
 
+    // Load OpenGL
     int version = gladLoadGLLoader(SDL_GL_GetProcAddress);
     if (version == 0) {
         SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to initialize OpenGL context");
@@ -46,7 +60,35 @@ int main(int argc, char *argv[])
 
     // The stuff lol
     {
+        auto* roofColor = new sm::Texture("assets/textures/roof_color.png");
+        auto* roofNormal = new sm::Texture("assets/textures/roof_normal.png");
+
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, roofColor->getId());
+        glBindTextureUnit(0, roofColor->getId());
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, roofNormal->getId());
+        glBindTextureUnit(1, roofNormal->getId());
+
         sm::Shader *shader = sm::loadShader("assets/albedo.vert", "assets/albedo.frag");
+        shader->setFloat("u_sMaterial.nAmbient", material.ambient);
+        shader->setFloat("u_sMaterial.nDiffuse", material.diffuse);
+        shader->setFloat("u_sMaterial.nSpecular", material.specular);
+        shader->setFloat("u_sMaterial.nShininess", material.shininess);
+
+        shader->setInt("u_texMain", 0);
+
+        shader->setInt("u_texNormal", 1);
+
+        auto *camera = new sm::Camera();
+        camera->position = glm::vec3(0.0f, 0.0f, 5.0f);
+        camera->target = glm::vec3(0.0f, 0.0f, 0.0f); //Look at the center of the scene
+        camera->aspectRatio = (float)1600 / 900;
+        camera->fov = 60.0f; //Vertical field of view, in degrees
+
+        auto *model = new sm::Model("assets/models/Suzanne.fbx");
+        sm::Transform monkeyTransform;
 
         SDL_Event event;
         bool running = true;
@@ -64,11 +106,18 @@ int main(int argc, char *argv[])
             glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
+            shader->use();
+            shader->setMat4("u_matModel", monkeyTransform.modelMatrix());
+            shader->setMat4("u_matView", camera->projectionMatrix() * camera->viewMatrix());
+            shader->setVec3("u_vEyePos", camera->position);
+
+            model->draw();
+
             // Update the window
             SDL_GL_SwapWindow(window);
         }
 
-        delete shader;
+        delete shader, model;
     }
 
     // Cleanup!

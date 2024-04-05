@@ -20,8 +20,18 @@ include(cmake/CPM.cmake)
 #file(GLOB ${PROJECT_NAME}_SRC src/*.cpp)
 add_executable(ShaderMaker
         src/external/glad.c
+        src/external/stb_image.cpp
         src/main.cpp
-        src/shader.cpp)
+        src/shader.cpp
+        src/model.cpp
+        src/model.h
+        src/mesh.cpp
+        src/mesh.h
+        src/camera.h
+        src/transform.cpp
+        src/transform.h
+        src/texture.h
+        src/texture.cpp)
 
 # OpenGL
 find_package(OpenGL REQUIRED)
@@ -29,6 +39,16 @@ message("OpenGL Include Dir: ${OPENGL_INCLUDE_DIR}")
 message("OpenGL Libraries: ${OPENGL_LIBRARIES}")
 #target_include_directories(ShaderMaker PUBLIC ${OPENGL_INCLUDE_DIR})
 #target_link_libraries(ShaderMaker PUBLIC ${OPENGL_LIBRARIES})
+
+# GLM
+set(GLM_BUILD_TESTS OFF)
+set(BUILD_SHARED_LIBS OFF)
+CPMAddPackage(
+        "gh:g-truc/glm#1.0.1"
+)
+set (glm_INCLUDE_DIR ${glm_SOURCE_DIR}/include)
+target_include_directories(ShaderMaker PRIVATE ${glm_INCLUDE_DIR})
+target_link_libraries(ShaderMaker PRIVATE glm::glm)
 
 # Assimp
 set(ASSIMP_INSTALL OFF)
