@@ -62,4 +62,3 @@ namespace sm {
         id = loadTexture(path, GL_REPEAT, GL_LINEAR, GL_LINEAR_MIPMAP_LINEAR, true);
     }
 }
-

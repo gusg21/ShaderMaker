@@ -72,6 +72,7 @@ int main(int argc, char *argv[])
         glBindTextureUnit(1, roofNormal->getId());
 
         sm::Shader *shader = sm::loadShader("assets/albedo.vert", "assets/albedo.frag");
+        shader->use();
         shader->setFloat("u_sMaterial.nAmbient", material.ambient);
         shader->setFloat("u_sMaterial.nDiffuse", material.diffuse);
         shader->setFloat("u_sMaterial.nSpecular", material.specular);

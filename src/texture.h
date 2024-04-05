@@ -23,3 +23,5 @@ namespace sm {
 }
 
 #endif //SHADERMAKER_TEXTURE_H
+
+
