@@ -87,6 +87,6 @@ namespace sm {
         std::stringstream vertexBuffer;
         vertexBuffer << vertexStream.rdbuf();
 
-        return new Shader(fragmentBuffer.str(), vertexBuffer.str());
+        return new Shader(vertexBuffer.str(), fragmentBuffer.str());
     }
 } // sm

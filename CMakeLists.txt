@@ -19,7 +19,7 @@ include(cmake/CPM.cmake)
 # Main Executable
 #file(GLOB ${PROJECT_NAME}_SRC src/*.cpp)
 add_executable(ShaderMaker
-        src/external/glad.cpp
+        src/external/glad.c
         src/main.cpp
         src/shader.cpp)
 

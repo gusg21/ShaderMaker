@@ -1,6 +1,5 @@
-#include "SDL.h"
-
 #include "external/glad.h"
+#include "SDL.h"
 
 #include "shader.h"
 
@@ -32,10 +31,17 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    SDL_GL_LoadLibrary(NULL); // Load OpenGL
     SDL_GLContext context = SDL_GL_CreateContext(window);
     if (context == nullptr) {
         SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to create OpenGL context: %s", SDL_GetError());
         return 1;
+    }
+
+    int version = gladLoadGLLoader(SDL_GL_GetProcAddress);
+    if (version == 0) {
+        SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to initialize OpenGL context");
+        return -1;
     }
 
     // The stuff lol

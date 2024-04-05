@@ -8,17 +8,17 @@
 #include <string>
 
 namespace sm {
-    class Shader {
-    public:
-        Shader(const std::string &fragment, const std::string &vertex);
+	class Shader {
+	public:
+		Shader(const std::string& vertex, const std::string& fragment);
 
-        void use();
+		void use();
 
-    private:
-        uint32_t program;
-    };
+	private:
+		uint32_t program;
+	};
 
-    Shader* loadShader(const std::string &fragmentFile, const std::string &vertexFile);
+	Shader* loadShader(const std::string& vertexFile, const std::string& fragmentFile);
 } // sm
 
 #endif //SHADERMAKER_SHADER_H
