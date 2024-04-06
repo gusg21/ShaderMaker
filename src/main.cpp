@@ -5,6 +5,7 @@
 #include <backends/imgui_impl_opengl3.h>
 
 #include "sm/shader.h"
+#include "sm/shadermaker.h"
 #include "sm/model.h"
 #include "sm/camera.h"
 #include "sm/transform.h"
@@ -57,19 +58,21 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
-	// Load IMGUI
-	ImGuiContext* imguiContext = ImGui::CreateContext();
-	ImGui::GetIO().DisplaySize = ImVec2 { SCREEN_WIDTH, SCREEN_HEIGHT };
-	ImGui::GetIO().Fonts->Build();
-	ImGui_ImplSDL2_InitForOpenGL(window, context);
-	ImGui_ImplOpenGL3_Init();
-
 	// Load OpenGL
 	int version = gladLoadGLLoader(SDL_GL_GetProcAddress);
 	if (version == 0) {
 		SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Failed to initialize OpenGL context");
 		return -1;
 	}
+
+	// Load IMGUI
+	ImGuiContext* imguiContext = ImGui::CreateContext();
+	ImGui::GetIO().DisplaySize = ImVec2{ SCREEN_WIDTH, SCREEN_HEIGHT };
+	ImGui::GetIO().Fonts->Build();
+	ImGui_ImplSDL2_InitForOpenGL(window, context);
+	ImGui_ImplOpenGL3_Init();
+
+	// GRAPHICS INITIALIZATION //
 
 	// Enable backface cullin'
 	glEnable(GL_CULL_FACE);
@@ -78,6 +81,9 @@ int main(int argc, char* argv[])
 
 	// The stuff lol
 	{
+		// Set up ShaderMaker
+		sm::maker::Window maker{};
+
 		// Load and bind the textures
 		auto* roofColor = new sm::Texture("assets/textures/roof_color.png");
 		auto* roofNormal = new sm::Texture("assets/textures/roof_normal.png");
@@ -133,8 +139,9 @@ int main(int argc, char* argv[])
 			ImGui_ImplSDL2_NewFrame();
 			ImGui_ImplOpenGL3_NewFrame();
 
-			// IMGUI Window
-			ImGui::Begin("Ooga Booga");
+			// Shader Maker
+			ImGui::Begin("Shader Maker");
+			maker.doGui();
 			ImGui::End();
 
 			// Spin da monkey
@@ -167,7 +174,7 @@ int main(int argc, char* argv[])
 			lastFrameTicks = current_time;
 		}
 
-		delete shader, model;
+		delete shader, model, camera;
 	}
 
 	// Cleanup!

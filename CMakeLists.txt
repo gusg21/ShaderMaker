@@ -31,7 +31,9 @@ add_executable(ShaderMaker
         "src/sm/transform.cpp"
         "src/sm/transform.h"
         "src/sm/texture.h"
-        "src/sm/texture.cpp")
+        "src/sm/texture.cpp" 
+        "src/sm/shadermaker.cpp" 
+        "src/sm/shadermaker.h")
 
 # OpenGL
 find_package(OpenGL REQUIRED)
@@ -96,6 +98,19 @@ file(GLOB imgui_INC
 target_include_directories(ShaderMaker PRIVATE ${imgui_INC_DIR})
 target_sources(ShaderMaker PRIVATE
     ${imgui_SRC} ${imgui_INC}
+)
+
+# IMGUI nodez
+set(imgui_nodes_INC_DIR src/external/imgui-node-editor)
+file(GLOB imgui_nodes_SRC 
+    src/external/imgui-node-editor/*.cpp
+)
+file(GLOB imgui_nodes_INC
+    ${imgui_nodes_INC_DIR}/*.h
+)
+target_include_directories(ShaderMaker PRIVATE ${imgui_nodes_INC_DIR})
+target_sources(ShaderMaker PRIVATE
+    ${imgui_nodes_SRC} ${imgui_nodes_INC}
 )
 
 # Asset Bundle
