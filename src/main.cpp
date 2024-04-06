@@ -1,5 +1,8 @@
 #include "external/glad.h"
 #include "SDL.h"
+#include <imgui.h>
+#include <backends/imgui_impl_sdl2.h>
+#include <backends/imgui_impl_opengl3.h>
 
 #include "sm/shader.h"
 #include "sm/model.h"
@@ -54,6 +57,13 @@ int main(int argc, char* argv[])
 		return 1;
 	}
 
+	// Load IMGUI
+	ImGuiContext* imguiContext = ImGui::CreateContext();
+	ImGui::GetIO().DisplaySize = ImVec2 { SCREEN_WIDTH, SCREEN_HEIGHT };
+	ImGui::GetIO().Fonts->Build();
+	ImGui_ImplSDL2_InitForOpenGL(window, context);
+	ImGui_ImplOpenGL3_Init();
+
 	// Load OpenGL
 	int version = gladLoadGLLoader(SDL_GL_GetProcAddress);
 	if (version == 0) {
@@ -64,7 +74,7 @@ int main(int argc, char* argv[])
 	// Enable backface cullin'
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
-	glEnable(GL_DEPTH_TEST); //Depth testing
+	glEnable(GL_DEPTH_TEST); // Depth testing
 
 	// The stuff lol
 	{
@@ -106,6 +116,10 @@ int main(int argc, char* argv[])
 		while (running) {
 			// EVENTS //
 			while (SDL_PollEvent(&event)) {
+				// Send to IMGUI
+				ImGui_ImplSDL2_ProcessEvent(&event);
+
+				// Process our own events
 				switch (event.type) {
 				case SDL_QUIT:
 					running = false;
@@ -114,6 +128,16 @@ int main(int argc, char* argv[])
 			}
 
 			// UPDATING //
+			// Update IMGUI
+			ImGui::NewFrame();
+			ImGui_ImplSDL2_NewFrame();
+			ImGui_ImplOpenGL3_NewFrame();
+
+			// IMGUI Window
+			ImGui::Begin("Ooga Booga");
+			ImGui::End();
+
+			// Spin da monkey
 			monkeyTransform.rotation = glm::rotate(monkeyTransform.rotation, 1.f * deltaTime, glm::vec3(0, 1, 0));
 
 			// DRAWING //
@@ -130,7 +154,11 @@ int main(int argc, char* argv[])
 			// Draw the monkey
 			model->draw();
 
-			// Update the window
+			// Draw IMGUI
+			ImGui::Render();
+			ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+			// Flip the window
 			SDL_GL_SwapWindow(window);
 
 			// Update delta time calculation
@@ -143,6 +171,8 @@ int main(int argc, char* argv[])
 	}
 
 	// Cleanup!
+	ImGui_ImplSDL2_Shutdown();
+	ImGui_ImplOpenGL3_Shutdown();
 	SDL_GL_DeleteContext(context);
 	SDL_DestroyWindow(window);
 	SDL_Quit();

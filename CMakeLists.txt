@@ -84,8 +84,19 @@ target_include_directories(ShaderMaker PRIVATE ${assimp_INCLUDE_DIR})
 target_link_libraries(ShaderMaker PRIVATE assimp)
 
 # IMGUI
-CPMAddPackage("gh:ocornut/imgui#v1.90.4")
-target_link_libraries(ShaderMaker PRIVATE imgui)
+set(imgui_INC_DIR src/external/imgui)
+file(GLOB imgui_SRC 
+    src/external/imgui/*.cpp
+    src/external/imgui/backends/imgui_impl_sdl2.cpp
+    src/external/imgui/backends/imgui_impl_opengl3.cpp
+)
+file(GLOB imgui_INC
+    ${imgui_INC_DIR}/*.h
+)
+target_include_directories(ShaderMaker PRIVATE ${imgui_INC_DIR})
+target_sources(ShaderMaker PRIVATE
+    ${imgui_SRC} ${imgui_INC}
+)
 
 # Asset Bundle
 add_custom_target(ShaderMaker_Assets ALL COMMAND ${CMAKE_COMMAND} -E copy_directory
