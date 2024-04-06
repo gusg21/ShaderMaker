@@ -100,10 +100,11 @@ int main(int argc, char* argv[])
 		uint64_t lastFrameTicks = SDL_GetTicks64();
 		float deltaTime = 0.f;
 
+		// The game loop!
 		SDL_Event event;
 		bool running = true;
 		while (running) {
-			// Handle events
+			// EVENTS //
 			while (SDL_PollEvent(&event)) {
 				switch (event.type) {
 				case SDL_QUIT:
@@ -112,9 +113,10 @@ int main(int argc, char* argv[])
 				}
 			}
 
-			// Update + draw
+			// UPDATING //
 			monkeyTransform.rotation = glm::rotate(monkeyTransform.rotation, 1.f * deltaTime, glm::vec3(0, 1, 0));
 
+			// DRAWING //
 			glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
 			glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -132,10 +134,10 @@ int main(int argc, char* argv[])
 			SDL_GL_SwapWindow(window);
 
 			// Update delta time calculation
-			deltaTime = (SDL_GetTicks64() - lastFrameTicks) / (1000.f);
-			lastFrameTicks = SDL_GetTicks64();
+			uint64_t current_time = SDL_GetTicks64();
+			deltaTime = (current_time - lastFrameTicks) / (1000.f);
+			lastFrameTicks = current_time;
 		}
-
 
 		delete shader, model;
 	}
