@@ -50,6 +50,18 @@ set (glm_INCLUDE_DIR ${glm_SOURCE_DIR}/include)
 target_include_directories(ShaderMaker PRIVATE ${glm_INCLUDE_DIR})
 target_link_libraries(ShaderMaker PRIVATE glm::glm)
 
+# SDL
+CPMAddPackage("gh:libsdl-org/SDL#release-2.30.2")
+target_link_libraries(ShaderMaker PRIVATE SDL2::SDL2main)
+target_link_libraries(ShaderMaker PRIVATE SDL2::SDL2)
+if (WIN32)
+    add_custom_command(
+            TARGET ShaderMaker POST_BUILD
+            COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:SDL2::SDL2>" "$<TARGET_FILE_DIR:ShaderMaker>"
+            VERBATIM
+    )
+endif()
+
 # Assimp
 set(ASSIMP_INSTALL OFF)
 set(BUILD_SHARED_LIBS OFF)
@@ -71,17 +83,9 @@ set (assimp_INCLUDE_DIR ${assimp_SOURCE_DIR}/include)
 target_include_directories(ShaderMaker PRIVATE ${assimp_INCLUDE_DIR})
 target_link_libraries(ShaderMaker PRIVATE assimp)
 
-# SDL
-CPMAddPackage("gh:libsdl-org/SDL#release-2.30.2")
-target_link_libraries(ShaderMaker PRIVATE SDL2::SDL2main)
-target_link_libraries(ShaderMaker PRIVATE SDL2::SDL2)
-if (WIN32)
-    add_custom_command(
-            TARGET ShaderMaker POST_BUILD
-            COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:SDL2::SDL2>" "$<TARGET_FILE_DIR:ShaderMaker>"
-            VERBATIM
-    )
-endif()
+# IMGUI
+CPMAddPackage("gh:ocornut/imgui#v1.90.4")
+target_link_libraries(ShaderMaker PRIVATE imgui)
 
 # Asset Bundle
 add_custom_target(ShaderMaker_Assets ALL COMMAND ${CMAKE_COMMAND} -E copy_directory
