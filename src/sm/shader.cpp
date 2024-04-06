@@ -7,7 +7,7 @@
 #include <sstream>
 #include <SDL.h>
 
-#include "external/glad.h"
+#include "../external/glad.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>

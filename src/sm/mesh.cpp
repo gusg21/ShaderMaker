@@ -3,7 +3,7 @@
 //
 
 #include "mesh.h"
-#include "external/glad.h"
+#include "../external/glad.h"
 
 namespace sm {
     Mesh::Mesh(const MeshData& meshData)

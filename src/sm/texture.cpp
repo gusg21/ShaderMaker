@@ -3,12 +3,12 @@
 //
 
 #include "texture.h"
-#include "external/stb_image.h"
-#include "external/glad.h"
+#include "../external/stb_image.h"
+#include "../external/glad.h"
 
 #include <string>
 
-static int getTextureFormat(int numComponents) {
+static int getTextureFormat(int32_t numComponents) {
     switch (numComponents) {
         default:
             return GL_RGBA;
@@ -22,16 +22,16 @@ static int getTextureFormat(int numComponents) {
 }
 
 namespace sm {
-    unsigned int Texture::loadTexture(const std::string &path, int wrapMode, int magFilter, int minFilter, bool mipmap) {
-        int width, height, numComponents;
-        unsigned char* data = stbi_load(path.c_str(), &width, &height, &numComponents, 0);
+    uint32_t Texture::loadTexture(const std::string &path, int32_t wrapMode, int32_t magFilter, int32_t minFilter, bool mipmap) {
+        int32_t width, height, numComponents;
+        uint8_t* data = stbi_load(path.c_str(), &width, &height, &numComponents, 0);
         if (data == NULL) {
             printf("Failed to load image %s", path.c_str());
             stbi_image_free(data);
             return 0;
         }
 
-        unsigned int texture;
+        uint32_t texture;
         glGenTextures(1, &texture);
         glBindTexture(GL_TEXTURE_2D, texture);
         int format = getTextureFormat(numComponents);
@@ -54,8 +54,15 @@ namespace sm {
         return texture;
     }
 
-    Texture::Texture(const std::string &path, int wrapMode, int magFilter, int minFilter, bool mipmap) {
+    Texture::Texture(const std::string &path, int32_t wrapMode, int32_t magFilter, int32_t minFilter, bool mipmap) {
         id = loadTexture(path, wrapMode, magFilter, minFilter, mipmap);
+    }
+
+    void Texture::bindToTextureUnit(uint32_t unit)
+    {
+        glActiveTexture(GL_TEXTURE0 + unit);
+        glBindTexture(GL_TEXTURE_2D, getId());
+        glBindTextureUnit(unit, getId());
     }
 
     Texture::Texture(const std::string &path) {

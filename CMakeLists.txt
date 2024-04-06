@@ -19,19 +19,19 @@ include(cmake/CPM.cmake)
 # Main Executable
 #file(GLOB ${PROJECT_NAME}_SRC src/*.cpp)
 add_executable(ShaderMaker
-        src/external/glad.c
-        src/external/stb_image.cpp
-        src/main.cpp
-        src/shader.cpp
-        src/model.cpp
-        src/model.h
-        src/mesh.cpp
-        src/mesh.h
-        src/camera.h
-        src/transform.cpp
-        src/transform.h
-        src/texture.h
-        src/texture.cpp)
+        "src/external/glad.c"
+        "src/external/stb_image.cpp"
+        "src/main.cpp"
+        "src/sm/shader.cpp"
+        "src/sm/model.cpp"
+        "src/sm/model.h"
+        "src/sm/mesh.cpp"
+        "src/sm/mesh.h"
+        "src/sm/camera.h"
+        "src/sm/transform.cpp"
+        "src/sm/transform.h"
+        "src/sm/texture.h"
+        "src/sm/texture.cpp")
 
 # OpenGL
 find_package(OpenGL REQUIRED)
