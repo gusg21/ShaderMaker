@@ -12,6 +12,58 @@ Window::Window()
 	ax::NodeEditor::Config nodesConfig;
 	context = ax::NodeEditor::CreateEditor(&nodesConfig);
 
+	nodeSpecs.emplace_back("Constant (Float)",
+		std::vector<PinSpec>{}, std::vector<PinSpec>{
+		PinSpec{ "Value", PinType::FLOAT }
+	}, true
+	);
+	nodeSpecs.emplace_back("Constant (Int)",
+		std::vector<PinSpec>{}, std::vector<PinSpec>{
+		PinSpec{ "Value", PinType::INT }
+	}, true
+	);
+	nodeSpecs.emplace_back("Constant (Vec2)",
+		std::vector<PinSpec>{}, std::vector<PinSpec>{
+		PinSpec{ "Value", PinType::VEC2 }
+	}, true
+	);
+	nodeSpecs.emplace_back("Constant (Vec3)",
+		std::vector<PinSpec>{}, std::vector<PinSpec>{
+		PinSpec{ "Value", PinType::VEC3 }
+	}, true
+	);
+	nodeSpecs.emplace_back("Constant (Vec4)",
+		std::vector<PinSpec>{}, std::vector<PinSpec>{
+		PinSpec{ "Value", PinType::VEC4 }
+	}, true
+	);
+	nodeSpecs.emplace_back("Compose (Vec2)",
+		std::vector<PinSpec>{
+		PinSpec{ "X", PinType::FLOAT },
+			PinSpec{ "Y", PinType::FLOAT },
+	}, std::vector<PinSpec>{
+		PinSpec{ "Value", PinType::VEC2 }
+	}
+	);
+	nodeSpecs.emplace_back("Compose (Vec3)",
+		std::vector<PinSpec>{
+		PinSpec{ "X", PinType::FLOAT },
+			PinSpec{ "Y", PinType::FLOAT },
+			PinSpec{ "Z", PinType::FLOAT },
+	}, std::vector<PinSpec>{
+		PinSpec{ "Value", PinType::VEC3 }
+	}
+	);
+	nodeSpecs.emplace_back("Compose (Vec4)",
+		std::vector<PinSpec>{
+		PinSpec{ "X", PinType::FLOAT },
+			PinSpec{ "Y", PinType::FLOAT },
+			PinSpec{ "Z", PinType::FLOAT },
+			PinSpec{ "W", PinType::FLOAT },
+	}, std::vector<PinSpec>{
+		PinSpec{ "Value", PinType::VEC4 }
+	}
+	);
 	nodeSpecs.emplace_back("Lerp (Float)",
 		std::vector<PinSpec>{
 		PinSpec{ "A", PinType::FLOAT },
@@ -74,7 +126,7 @@ Window::~Window()
 
 void Window::createNodeFromSpec(const NodeSpec& spec)
 {
-	nodes.emplace_back(nextId++, spec.name);
+	nodes.emplace_back(nextId++, spec.name, spec.isConstant);
 	for (const PinSpec& pinSpec : spec.inputs) {
 		nodes.back().inputs.emplace_back(nextId++, pinSpec.name, pinSpec.type);
 	}
@@ -86,7 +138,7 @@ void Window::createNodeFromSpec(const NodeSpec& spec)
 
 void Window::createNodeFromSpecAt(const NodeSpec& spec, ImVec2 position)
 {
-	nodes.emplace_back(nextId++, spec.name);
+	nodes.emplace_back(nextId++, spec.name, spec.isConstant);
 	for (const PinSpec& pinSpec : spec.inputs) {
 		nodes.back().inputs.emplace_back(nextId++, pinSpec.name, pinSpec.type);
 	}
@@ -225,22 +277,27 @@ void Window::doGui()
 					// Node name
 					ImGui::Text(node.name.c_str());
 
-					// Inputs
-					ImGui::BeginGroup();
-					for (Pin inputPin : node.inputs) {
-						ax::NodeEditor::BeginPin(inputPin.id, inputPin.kind);
-						{
-							// Icon
-							ImVec2 uv0, uv1;
-							this->getPinTypeTexCoords(inputPin.type, &uv0, &uv1);
-							ImGui::Image((ImTextureID)iconsTexture->getId(), ImVec2{ ICON_SIZE, ICON_SIZE }, uv0, uv1);
-						}
-						ax::NodeEditor::EndPin();
+					if (!node.isConstant) {
+						// Inputs
+						ImGui::BeginGroup();
+						for (Pin inputPin : node.inputs) {
+							ax::NodeEditor::BeginPin(inputPin.id, inputPin.kind);
+							{
+								// Icon
+								ImVec2 uv0, uv1;
+								this->getPinTypeTexCoords(inputPin.type, &uv0, &uv1);
+								ImGui::Image((ImTextureID)iconsTexture->getId(), ImVec2{ ICON_SIZE, ICON_SIZE }, uv0, uv1);
+							}
+							ax::NodeEditor::EndPin();
 
-						ImGui::SameLine();
-						ImGui::Text(inputPin.name.c_str());
+							ImGui::SameLine();
+							ImGui::Text(inputPin.name.c_str());
+						}
+						ImGui::EndGroup();
 					}
-					ImGui::EndGroup();
+					else {
+						ImGui::SameLine(); // Put the title on the same line as the outputs
+					}
 
 					// Outputs
 					ImGui::SameLine();

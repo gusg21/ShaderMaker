@@ -25,17 +25,19 @@ namespace sm {
 			std::string name;
 			PinType type;
 
-			Pin(int32_t id, const std::string& name, PinType type) : id(id), name(name), type(type), kind(ax::NodeEditor::PinKind::Input), node(nullptr) {}
+			Pin(int32_t id, const std::string& name, PinType type)
+				: id(id), name(name), type(type), kind(ax::NodeEditor::PinKind::Input), node(nullptr) {}
 		};
 
 		struct Node {
 			ax::NodeEditor::NodeId id;
+			bool isConstant;
 
 			std::string name;
 			std::vector<Pin> inputs;
 			std::vector<Pin> outputs;
 
-			Node(int32_t id, const std::string& name) : id(id), name(name) {}
+			Node(int32_t id, const std::string& name, bool isConstant) : id(id), name(name), isConstant(isConstant) {}
 		};
 
 		struct Link {
@@ -56,11 +58,13 @@ namespace sm {
 
 		struct NodeSpec {
 			std::string name;
+			bool isConstant;
 
 			std::vector<PinSpec> inputs;
 			std::vector<PinSpec> outputs;
 
-			NodeSpec(const std::string& name, std::vector<PinSpec> inputs, std::vector<PinSpec> outputs) : name(name), inputs(inputs), outputs(outputs) {}
+			NodeSpec(const std::string& name, std::vector<PinSpec> inputs, std::vector<PinSpec> outputs, bool isConstant = false)
+				: name(name), inputs(inputs), outputs(outputs), isConstant(isConstant) {}
 		};
 
 		class Window {
