@@ -289,8 +289,8 @@ void Window::doGui()
 						for (Pin inputPin : node.inputs) {
 							ax::NodeEditor::BeginPin(inputPin.id, inputPin.kind);
 							{
-								ImGui::Text("%d", inputPin.id.Get());
-								ImGui::SameLine();
+								/*ImGui::Text("%d", inputPin.id.Get());
+								ImGui::SameLine();*/
 
 								// Icon
 								ImVec2 uv0, uv1;
@@ -326,8 +326,8 @@ void Window::doGui()
 
 							ax::NodeEditor::BeginPin(outputPin.id, outputPin.kind);
 							{
-								ImGui::Text("%d", outputPin.id.Get());
-								ImGui::SameLine();
+								/*ImGui::Text("%d", outputPin.id.Get());
+								ImGui::SameLine();*/
 
 								// Icon
 								ImVec2 uv0, uv1;
@@ -345,7 +345,6 @@ void Window::doGui()
 			// Links
 			for (const Link& link : links) {
 				ax::NodeEditor::Link(link.id, link.inPinId, link.outPinId, getPinTypeColor(link.inPin->type));
-				ImGui::Text("%d", link.id.Get());
 			}
 
 			// Popups
@@ -383,14 +382,45 @@ void Window::doGui()
 		if (ImGui::Button("Compose Code for Selected")) {
 			ax::NodeEditor::NodeId selectedId;
 			ax::NodeEditor::GetSelectedNodes(&selectedId, 1);
-			if (!selectedId.Invalid) {
-				const Node* node = findNodeById(selectedId);
-				printf("%s", composeCodeForNode(node).c_str());
-			}
+			const Node* node = findNodeById(selectedId);
+			printf("%s", composeCodeForNode(node).c_str());
 		}
 
 		ImGui::Text("Link Count: %d", links.size());
+		for (const Link& link : links) {
+			ImGui::Indent();
+			ImGui::Text("#%d: node %d out %d -> node %d in %d", link.id, link.outPin->node->id.Get(), link.outPinId.Get(), link.inPin->node->id.Get(), link.inPinId.Get());
+			ImGui::Unindent();
+		}
 		ImGui::Text("Node Count: %d", nodes.size());
+		for (const Node& node : nodes) {
+			ImGui::Indent();
+			{
+				ImGui::Text("%s#%d", node.name.c_str(), node.id);
+				ImGui::Indent();
+				{
+					ImGui::Text("inputs:");
+					ImGui::Indent();
+					for (const Pin& pin : node.inputs) {
+						ImGui::Text("%s#%d", pin.name.c_str(), pin.id);
+					}
+					ImGui::Unindent();
+				}
+				ImGui::Unindent();
+				ImGui::Indent();
+				{
+					ImGui::Text("outputs:");
+					ImGui::Indent();
+					for (const Pin& pin : node.outputs) {
+						ImGui::Text("%s#%d", pin.name.c_str(), pin.id);
+					}
+					ImGui::Unindent();
+				}
+				ImGui::Unindent();
+
+			}
+			ImGui::Unindent();
+		}
 	}
 	ImGui::End();
 }
@@ -503,7 +533,7 @@ const Node* sm::maker::Window::findNodeById(ax::NodeEditor::NodeId id) const
 const Link* Window::findLinkEndingAtId(ax::NodeEditor::PinId id) const
 {
 	for (size_t i = 0; i < links.size(); i++) {
-		if (links[i].outPinId == id) return &links[i];
+		if (links[i].inPinId == id) return &links[i];
 	}
 	return nullptr;
 }
@@ -513,7 +543,7 @@ std::string Window::composeCodeForNode(const Node* node) {
 		return std::string(node->data);
 	}
 
-	std::string contents;
+	std::string contents{};
 	bool isAssignment = node->isDataHook && node->outputs.size() == 0;
 	if (isAssignment) { // Assignment (x = ...)
 		contents += node->data;
@@ -526,7 +556,7 @@ std::string Window::composeCodeForNode(const Node* node) {
 
 	for (const Pin& inputPin : node->inputs) {
 		const Link* link = findLinkEndingAtId(inputPin.id);
-		if (link == nullptr) return "#ERR(no link #" + std::to_string(inputPin.id.Get()) + ")";
+		if (link == nullptr) return "#ERR(no link ending #" + std::to_string(inputPin.id.Get()) + ")";
 		contents += composeCodeForNode(link->outPin->node);
 	}
 

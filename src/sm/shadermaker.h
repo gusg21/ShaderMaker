@@ -35,7 +35,7 @@ namespace sm {
 			ax::NodeEditor::NodeId id;
 
 			bool isDataHook;
-			char data[256];
+			char data[256] = { 0 };
 
 			std::string name;
 			std::vector<Pin> inputs;
@@ -45,7 +45,6 @@ namespace sm {
 
 			Node(int32_t id, const std::string& name, bool isConstant, const NodeSpec* spec)
 				: id(id), name(name), isDataHook(isConstant), spec(spec) {
-				memset(data, 0, 256);
 			}
 		};
 
