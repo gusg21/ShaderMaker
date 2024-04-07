@@ -221,7 +221,7 @@ void Window::doGui()
 						if (isInToOut && areTypesCompat && ax::NodeEditor::AcceptNewItem())
 						{
 							// Since we accepted new link, lets add one to our list of links.
-							links.emplace_back(nextId++, startPinId, endPinId);
+							links.emplace_back(nextId++, startPin, endPin);
 						}
 					}
 					else {
@@ -275,7 +275,7 @@ void Window::doGui()
 			for (Node& node : nodes) {
 				ax::NodeEditor::BeginNode(node.id);
 				{
-					if (!node.isConstant) {
+					if (!node.isDataHook) {
 						// Node name
 						ImGui::Text(node.name.c_str());
 
@@ -327,7 +327,9 @@ void Window::doGui()
 			}
 
 			// Links
-			for (const Link& link : links) { ax::NodeEditor::Link(link.id, link.startPinId, link.endPinId); }
+			for (const Link& link : links) {
+				ax::NodeEditor::Link(link.id, link.startPinId, link.endPinId, getPinTypeColor(link.startPin->type));
+			}
 
 			// Popups
 			ax::NodeEditor::Suspend();
@@ -399,6 +401,23 @@ void Window::getPinTypeTexCoords(PinType type, ImVec2* uv0, ImVec2* uv1)
 		break;
 	}
 	}
+}
+
+ImVec4 Window::getPinTypeColor(PinType type) {
+	switch (type)
+	{
+	case sm::maker::PinType::FLOAT:
+		return ImVec4{ 0.f / 255.f, 255.f / 255.f, 183.f / 255.f, 1.f };
+	case sm::maker::PinType::INT:
+		return ImVec4{ 252.f / 255.f, 72.f / 255.f, 72.f / 255.f, 1.f };
+	case sm::maker::PinType::VEC2:
+	case sm::maker::PinType::VEC3:
+	case sm::maker::PinType::VEC4:
+		return ImVec4{ 210.f / 255.f, 29.f / 255.f, 183.f / 255.f, 1.f };
+	default:
+		return ImVec4{ 1.f, 0.f, 1.f, 1.f };
+	}
+
 }
 
 bool Window::canCastFrom(PinType from, PinType to)

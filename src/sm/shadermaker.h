@@ -32,14 +32,14 @@ namespace sm {
 		struct Node {
 			ax::NodeEditor::NodeId id;
 
-			bool isConstant;
+			bool isDataHook;
 			char data[256];
 
 			std::string name;
 			std::vector<Pin> inputs;
 			std::vector<Pin> outputs;
 
-			Node(int32_t id, const std::string& name, bool isConstant) : id(id), name(name), isConstant(isConstant) {
+			Node(int32_t id, const std::string& name, bool isConstant) : id(id), name(name), isDataHook(isConstant) {
 				memset(data, 0, 256);
 			}
 		};
@@ -49,8 +49,12 @@ namespace sm {
 
 			ax::NodeEditor::PinId startPinId;
 			ax::NodeEditor::PinId endPinId;
+			
+			const Pin* startPin;
+			const Pin* endPin;
 
-			Link(int32_t id, ax::NodeEditor::PinId start, ax::NodeEditor::PinId end) : id(id), startPinId(start), endPinId(end) {}
+			Link(int32_t id, const Pin* startPin, const Pin* endPin) 
+				: id(id), startPinId(startPin->id), endPinId(endPin->id), startPin(startPin), endPin(endPin) {}
 		};
 
 		struct PinSpec {
@@ -77,12 +81,12 @@ namespace sm {
 			~Window();
 
 			void doGui();
-			void doNodeMenuGui();
 
 			void createNodeFromSpec(const NodeSpec& spec);
 			void createNodeFromSpecAt(const NodeSpec& spec, ImVec2 position);
 			void buildNode(Node* node);
 			void getPinTypeTexCoords(PinType type, ImVec2* uv0, ImVec2* uv1);
+			ImVec4 getPinTypeColor(PinType type);
 			bool canCastFrom(PinType from, PinType to);
 			const Pin* findPinById(ax::NodeEditor::PinId id) const;
 
