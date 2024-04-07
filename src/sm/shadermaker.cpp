@@ -151,7 +151,7 @@ void Window::doGui()
 				{
 					if (startPinId && endPinId) // both are valid, let's accept link
 					{
-						const Pin* inPin, *outPin;
+						const Pin* inPin, * outPin;
 						const Pin* startPin = findPinById(startPinId);
 						const Pin* endPin = findPinById(endPinId);
 						if (startPin->kind == ax::NodeEditor::PinKind::Input) {
@@ -306,23 +306,33 @@ void Window::getPinTypeTexCoords(PinType type, ImVec2* uv0, ImVec2* uv1)
 	{
 	case sm::maker::PinType::INT:
 	{
-		*uv0 = ImVec2{ 0.5f, 0.f };
-		*uv1 = ImVec2{ 1.f, 0.5f };
+		*uv0 = ImVec2{ 0.25f, 0.f };
+		*uv1 = ImVec2{ 0.5f, 0.25f };
 		break;
 	}
 	case sm::maker::PinType::VEC2:
+	{
+		*uv0 = ImVec2{ 0.f, 0.25f };
+		*uv1 = ImVec2{ 0.25f, 0.5f };
+		break;
+	}
 	case sm::maker::PinType::VEC3:
+	{
+		*uv0 = ImVec2{ 0.25f, 0.25f };
+		*uv1 = ImVec2{ 0.5f, 0.5f };
+		break;
+	}
 	case sm::maker::PinType::VEC4:
 	{
-		*uv0 = ImVec2{ 0.f, 0.5f };
-		*uv1 = ImVec2{ 0.5f, 1.0f };
+		*uv0 = ImVec2{ 0.5f, 0.25f };
+		*uv1 = ImVec2{ 0.75f, 0.5f };
 		break;
 	}
 	case sm::maker::PinType::FLOAT:
 	default:
 	{
 		*uv0 = ImVec2{ 0.f, 0.f };
-		*uv1 = ImVec2{ 0.5f, 0.5f };
+		*uv1 = ImVec2{ 0.25f, 0.25f };
 		break;
 	}
 	}
