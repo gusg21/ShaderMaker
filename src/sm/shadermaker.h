@@ -47,21 +47,44 @@ namespace sm {
 			Link(int32_t id, ax::NodeEditor::PinId start, ax::NodeEditor::PinId end) : id(id), startPinId(start), endPinId(end) {}
 		};
 
+		struct PinSpec {
+			std::string name;
+			PinType type;
+
+			PinSpec(const std::string& name, PinType type) : name(name), type(type) {}
+		};
+
+		struct NodeSpec {
+			std::string name;
+
+			std::vector<PinSpec> inputs;
+			std::vector<PinSpec> outputs;
+
+			NodeSpec(const std::string& name, std::vector<PinSpec> inputs, std::vector<PinSpec> outputs) : name(name), inputs(inputs), outputs(outputs) {}
+		};
+
 		class Window {
 		public:
 			Window();
 			~Window();
 
-			void buildNode(Node* node);
 			void doGui();
+			void doNodeMenuGui();
+
+			void createNodeFromSpec(const NodeSpec& spec);
+			void createNodeFromSpecAt(const NodeSpec& spec, ImVec2 position);
+			void buildNode(Node* node);
 			void getPinTypeTexCoords(PinType type, ImVec2* uv0, ImVec2* uv1);
+			bool canCastFrom(PinType from, PinType to);
+			const Pin* findPinById(ax::NodeEditor::PinId id) const;
 
 		private:
-			uint32_t nextId;
+			uint32_t nextId = 0;
 
 			ax::NodeEditor::EditorContext* context;
 			sm::Texture* iconsTexture;
 
+			std::vector<NodeSpec> nodeSpecs;
 			std::vector<Node> nodes;
 			std::vector<Link> links;
 		};

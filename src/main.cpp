@@ -140,9 +140,7 @@ int main(int argc, char* argv[])
 			ImGui_ImplOpenGL3_NewFrame();
 
 			// Shader Maker
-			ImGui::Begin("Shader Maker");
 			maker.doGui();
-			ImGui::End();
 
 			// Spin da monkey
 			monkeyTransform.rotation = glm::rotate(monkeyTransform.rotation, 1.f * deltaTime, glm::vec3(0, 1, 0));
