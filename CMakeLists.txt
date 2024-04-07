@@ -91,6 +91,7 @@ file(GLOB imgui_SRC
     src/external/imgui/*.cpp
     src/external/imgui/backends/imgui_impl_sdl2.cpp
     src/external/imgui/backends/imgui_impl_opengl3.cpp
+    src/external/imgui/misc/cpp/imgui_stdlib.cpp
 )
 file(GLOB imgui_INC
     ${imgui_INC_DIR}/*.h

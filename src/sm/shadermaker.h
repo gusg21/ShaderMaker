@@ -31,13 +31,17 @@ namespace sm {
 
 		struct Node {
 			ax::NodeEditor::NodeId id;
+
 			bool isConstant;
+			char data[256];
 
 			std::string name;
 			std::vector<Pin> inputs;
 			std::vector<Pin> outputs;
 
-			Node(int32_t id, const std::string& name, bool isConstant) : id(id), name(name), isConstant(isConstant) {}
+			Node(int32_t id, const std::string& name, bool isConstant) : id(id), name(name), isConstant(isConstant) {
+				memset(data, 0, 256);
+			}
 		};
 
 		struct Link {

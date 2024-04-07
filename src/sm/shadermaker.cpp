@@ -2,6 +2,7 @@
 
 #include <imgui.h>
 #include <imgui_node_editor.h>
+#include <misc/cpp/imgui_stdlib.h>
 
 #define ICON_SIZE 16
 
@@ -11,6 +12,8 @@ Window::Window()
 {
 	ax::NodeEditor::Config nodesConfig;
 	context = ax::NodeEditor::CreateEditor(&nodesConfig);
+
+	iconsTexture = new Texture("assets/textures/icons/icons.png");
 
 	nodeSpecs.emplace_back("Constant (Float)",
 		std::vector<PinSpec>{}, std::vector<PinSpec>{
@@ -115,8 +118,6 @@ Window::Window()
 		PinSpec{ "Value", PinType::INT }
 	}
 	);
-
-	iconsTexture = new Texture("assets/textures/icons/icons.png");
 }
 
 Window::~Window()
@@ -271,13 +272,13 @@ void Window::doGui()
 			//ax::NodeEditor::EndDelete(); // Wrap up deletion action
 
 			// Nodes
-			for (Node node : nodes) {
+			for (Node& node : nodes) {
 				ax::NodeEditor::BeginNode(node.id);
 				{
-					// Node name
-					ImGui::Text(node.name.c_str());
-
 					if (!node.isConstant) {
+						// Node name
+						ImGui::Text(node.name.c_str());
+
 						// Inputs
 						ImGui::BeginGroup();
 						for (Pin inputPin : node.inputs) {
@@ -296,6 +297,11 @@ void Window::doGui()
 						ImGui::EndGroup();
 					}
 					else {
+						ImGui::SetNextItemWidth(100);
+						ImGui::PushID(node.id.Get());
+						ImGui::InputText("", node.data, 255);
+						ImGui::PopID();
+
 						ImGui::SameLine(); // Put the title on the same line as the outputs
 					}
 
