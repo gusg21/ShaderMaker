@@ -25,8 +25,8 @@ namespace sm {
 			std::string name;
 			PinType type;
 
-			Pin(int32_t id, const std::string& name, PinType type)
-				: id(id), name(name), type(type), kind(ax::NodeEditor::PinKind::Input), node(nullptr) {}
+			Pin(int32_t id, const std::string& name, PinType type, Node* node, ax::NodeEditor::PinKind kind)
+				: id(id), name(name), type(type), kind(kind), node(node) {}
 		};
 
 		struct NodeSpec;
@@ -52,14 +52,14 @@ namespace sm {
 		struct Link {
 			ax::NodeEditor::LinkId id;
 
-			ax::NodeEditor::PinId startPinId;
-			ax::NodeEditor::PinId endPinId;
+			ax::NodeEditor::PinId inPinId;
+			ax::NodeEditor::PinId outPinId;
 			
-			const Pin* startPin;
-			const Pin* endPin;
+			const Pin* inPin;
+			const Pin* outPin;
 
-			Link(int32_t id, const Pin* startPin, const Pin* endPin) 
-				: id(id), startPinId(startPin->id), endPinId(endPin->id), startPin(startPin), endPin(endPin) {}
+			Link(int32_t id, const Pin* inPin, const Pin* outPin) 
+				: id(id), inPin(inPin), outPin(outPin), inPinId(inPin->id), outPinId(outPin->id) {}
 		};
 
 		struct PinSpec {
@@ -90,7 +90,6 @@ namespace sm {
 
 			void createNodeFromSpec(const NodeSpec& spec);
 			void createNodeFromSpecAt(const NodeSpec& spec, ImVec2 position);
-			void buildNode(Node* node);
 			void getPinTypeTexCoords(PinType type, ImVec2* uv0, ImVec2* uv1);
 			ImVec4 getPinTypeColor(PinType type);
 			bool canCastFrom(PinType from, PinType to);

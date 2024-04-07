@@ -15,7 +15,12 @@ Window::Window()
 
 	iconsTexture = new Texture("assets/textures/icons/icons.png");
 
-	nodeSpecs.emplace_back("Uniform Assignment (Vec3)", "",
+	nodeSpecs.emplace_back("Output Assignment (Int)", "",
+		std::vector<PinSpec>{
+		PinSpec{ "Value", PinType::INT }
+	}, std::vector<PinSpec>{}, true
+			);
+	nodeSpecs.emplace_back("Output Assignment (Vec3)", "",
 		std::vector<PinSpec>{
 		PinSpec{ "Value", PinType::VEC3 }
 	}, std::vector<PinSpec>{}, true
@@ -133,41 +138,27 @@ Window::~Window()
 void Window::createNodeFromSpec(const NodeSpec& spec)
 {
 	nodes.emplace_back(nextId++, spec.name, spec.isConstant, &spec);
+	Node* node = &nodes.back();
 	for (const PinSpec& pinSpec : spec.inputs) {
-		nodes.back().inputs.emplace_back(nextId++, pinSpec.name, pinSpec.type);
+		node->inputs.emplace_back(nextId++, pinSpec.name, pinSpec.type, node, ax::NodeEditor::PinKind::Input);
 	}
 	for (const PinSpec& pinSpec : spec.outputs) {
-		nodes.back().outputs.emplace_back(nextId++, pinSpec.name, pinSpec.type);
+		node->outputs.emplace_back(nextId++, pinSpec.name, pinSpec.type, node, ax::NodeEditor::PinKind::Output);
 	}
-	buildNode(&nodes.back());
 }
 
 void Window::createNodeFromSpecAt(const NodeSpec& spec, ImVec2 position)
 {
 	nodes.emplace_back(nextId++, spec.name, spec.isConstant, &spec);
+	Node* node = &nodes.back();
 	for (const PinSpec& pinSpec : spec.inputs) {
-		nodes.back().inputs.emplace_back(nextId++, pinSpec.name, pinSpec.type);
+		node->inputs.emplace_back(nextId++, pinSpec.name, pinSpec.type, node, ax::NodeEditor::PinKind::Input);
 	}
 	for (const PinSpec& pinSpec : spec.outputs) {
-		nodes.back().outputs.emplace_back(nextId++, pinSpec.name, pinSpec.type);
-	}
-	buildNode(&nodes.back());
-	ax::NodeEditor::SetNodePosition(nodes.back().id, position);
-}
-
-void Window::buildNode(Node* node)
-{
-	for (auto& input : node->inputs)
-	{
-		input.node = node;
-		input.kind = ax::NodeEditor::PinKind::Input;
+		node->outputs.emplace_back(nextId++, pinSpec.name, pinSpec.type, node, ax::NodeEditor::PinKind::Output);
 	}
 
-	for (auto& output : node->outputs)
-	{
-		output.node = node;
-		output.kind = ax::NodeEditor::PinKind::Output;
-	}
+	ax::NodeEditor::SetNodePosition(node->id, position);
 }
 
 void Window::doGui()
@@ -226,7 +217,7 @@ void Window::doGui()
 						if (isInToOut && areTypesCompat && ax::NodeEditor::AcceptNewItem())
 						{
 							// Since we accepted new link, lets add one to our list of links.
-							links.emplace_back(nextId++, startPin, endPin);
+							links.emplace_back(nextId++, inPin, outPin);
 						}
 					}
 					else {
@@ -284,16 +275,23 @@ void Window::doGui()
 						ImGui::SetNextItemWidth(100);
 						ImGui::PushID(node.id.Get());
 						ImGui::InputText("", node.data, 255);
+						ImGui::SameLine();
+						ImGui::Text("%d", node.id.Get());
 						ImGui::PopID();
 					} else {
 						// Node name
 						ImGui::Text(node.name.c_str());
+						ImGui::SameLine();
+						ImGui::Text("%d", node.id.Get());
 
 						// Inputs
 						ImGui::BeginGroup();
 						for (Pin inputPin : node.inputs) {
 							ax::NodeEditor::BeginPin(inputPin.id, inputPin.kind);
 							{
+								ImGui::Text("%d", inputPin.id.Get());
+								ImGui::SameLine();
+
 								// Icon
 								ImVec2 uv0, uv1;
 								this->getPinTypeTexCoords(inputPin.type, &uv0, &uv1);
@@ -328,6 +326,9 @@ void Window::doGui()
 
 							ax::NodeEditor::BeginPin(outputPin.id, outputPin.kind);
 							{
+								ImGui::Text("%d", outputPin.id.Get());
+								ImGui::SameLine();
+
 								// Icon
 								ImVec2 uv0, uv1;
 								this->getPinTypeTexCoords(outputPin.type, &uv0, &uv1);
@@ -343,7 +344,8 @@ void Window::doGui()
 
 			// Links
 			for (const Link& link : links) {
-				ax::NodeEditor::Link(link.id, link.startPinId, link.endPinId, getPinTypeColor(link.startPin->type));
+				ax::NodeEditor::Link(link.id, link.inPinId, link.outPinId, getPinTypeColor(link.inPin->type));
+				ImGui::Text("%d", link.id.Get());
 			}
 
 			// Popups
@@ -386,6 +388,9 @@ void Window::doGui()
 				printf("%s", composeCodeForNode(node).c_str());
 			}
 		}
+
+		ImGui::Text("Link Count: %d", links.size());
+		ImGui::Text("Node Count: %d", nodes.size());
 	}
 	ImGui::End();
 }
@@ -498,14 +503,14 @@ const Node* sm::maker::Window::findNodeById(ax::NodeEditor::NodeId id) const
 const Link* Window::findLinkEndingAtId(ax::NodeEditor::PinId id) const
 {
 	for (size_t i = 0; i < links.size(); i++) {
-		if (links[i].endPinId == id) return &links[i];
+		if (links[i].outPinId == id) return &links[i];
 	}
 	return nullptr;
 }
 
 std::string Window::composeCodeForNode(const Node* node) {
 	if (node->isDataHook && node->inputs.size() == 0) { // Constant
-		return node->data;
+		return std::string(node->data);
 	}
 
 	std::string contents;
@@ -521,7 +526,8 @@ std::string Window::composeCodeForNode(const Node* node) {
 
 	for (const Pin& inputPin : node->inputs) {
 		const Link* link = findLinkEndingAtId(inputPin.id);
-		contents += composeCodeForNode(link->startPin->node);
+		if (link == nullptr) return "#ERR(no link #" + std::to_string(inputPin.id.Get()) + ")";
+		contents += composeCodeForNode(link->outPin->node);
 	}
 
 	if (isAssignment) {
