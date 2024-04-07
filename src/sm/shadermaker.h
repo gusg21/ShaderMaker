@@ -29,6 +29,8 @@ namespace sm {
 				: id(id), name(name), type(type), kind(ax::NodeEditor::PinKind::Input), node(nullptr) {}
 		};
 
+		struct NodeSpec;
+
 		struct Node {
 			ax::NodeEditor::NodeId id;
 
@@ -39,7 +41,10 @@ namespace sm {
 			std::vector<Pin> inputs;
 			std::vector<Pin> outputs;
 
-			Node(int32_t id, const std::string& name, bool isConstant) : id(id), name(name), isDataHook(isConstant) {
+			const NodeSpec* spec;
+
+			Node(int32_t id, const std::string& name, bool isConstant, const NodeSpec* spec)
+				: id(id), name(name), isDataHook(isConstant), spec(spec) {
 				memset(data, 0, 256);
 			}
 		};
@@ -66,13 +71,14 @@ namespace sm {
 
 		struct NodeSpec {
 			std::string name;
+			std::string funcName;
 			bool isConstant;
 
 			std::vector<PinSpec> inputs;
 			std::vector<PinSpec> outputs;
 
-			NodeSpec(const std::string& name, std::vector<PinSpec> inputs, std::vector<PinSpec> outputs, bool isConstant = false)
-				: name(name), inputs(inputs), outputs(outputs), isConstant(isConstant) {}
+			NodeSpec(const std::string& name, const std::string& funcName, std::vector<PinSpec> inputs, std::vector<PinSpec> outputs, bool isConstant = false)
+				: name(name), funcName(funcName), inputs(inputs), outputs(outputs), isConstant(isConstant) {}
 		};
 
 		class Window {
@@ -89,6 +95,10 @@ namespace sm {
 			ImVec4 getPinTypeColor(PinType type);
 			bool canCastFrom(PinType from, PinType to);
 			const Pin* findPinById(ax::NodeEditor::PinId id) const;
+			const Node* findNodeById(ax::NodeEditor::NodeId id) const;
+			const Link* findLinkEndingAtId(ax::NodeEditor::PinId id) const;
+
+			std::string composeCodeForNode(const Node* node);
 
 		private:
 			uint32_t nextId = 0;

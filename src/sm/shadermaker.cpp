@@ -15,32 +15,37 @@ Window::Window()
 
 	iconsTexture = new Texture("assets/textures/icons/icons.png");
 
-	nodeSpecs.emplace_back("Constant (Float)",
+	nodeSpecs.emplace_back("Uniform Assignment (Vec3)", "",
+		std::vector<PinSpec>{
+		PinSpec{ "Value", PinType::VEC3 }
+	}, std::vector<PinSpec>{}, true
+	);
+	nodeSpecs.emplace_back("Constant (Float)", "",
 		std::vector<PinSpec>{}, std::vector<PinSpec>{
 		PinSpec{ "Value", PinType::FLOAT }
 	}, true
 	);
-	nodeSpecs.emplace_back("Constant (Int)",
+	nodeSpecs.emplace_back("Constant (Int)", "",
 		std::vector<PinSpec>{}, std::vector<PinSpec>{
 		PinSpec{ "Value", PinType::INT }
 	}, true
 	);
-	nodeSpecs.emplace_back("Constant (Vec2)",
+	nodeSpecs.emplace_back("Constant (Vec2)", "",
 		std::vector<PinSpec>{}, std::vector<PinSpec>{
 		PinSpec{ "Value", PinType::VEC2 }
 	}, true
 	);
-	nodeSpecs.emplace_back("Constant (Vec3)",
+	nodeSpecs.emplace_back("Constant (Vec3)", "",
 		std::vector<PinSpec>{}, std::vector<PinSpec>{
 		PinSpec{ "Value", PinType::VEC3 }
 	}, true
 	);
-	nodeSpecs.emplace_back("Constant (Vec4)",
+	nodeSpecs.emplace_back("Constant (Vec4)", "",
 		std::vector<PinSpec>{}, std::vector<PinSpec>{
 		PinSpec{ "Value", PinType::VEC4 }
 	}, true
 	);
-	nodeSpecs.emplace_back("Compose (Vec2)",
+	nodeSpecs.emplace_back("Compose (Vec2)", "vec2",
 		std::vector<PinSpec>{
 		PinSpec{ "X", PinType::FLOAT },
 			PinSpec{ "Y", PinType::FLOAT },
@@ -48,7 +53,7 @@ Window::Window()
 		PinSpec{ "Value", PinType::VEC2 }
 	}
 	);
-	nodeSpecs.emplace_back("Compose (Vec3)",
+	nodeSpecs.emplace_back("Compose (Vec3)", "vec3",
 		std::vector<PinSpec>{
 		PinSpec{ "X", PinType::FLOAT },
 			PinSpec{ "Y", PinType::FLOAT },
@@ -57,7 +62,7 @@ Window::Window()
 		PinSpec{ "Value", PinType::VEC3 }
 	}
 	);
-	nodeSpecs.emplace_back("Compose (Vec4)",
+	nodeSpecs.emplace_back("Compose (Vec4)", "vec4",
 		std::vector<PinSpec>{
 		PinSpec{ "X", PinType::FLOAT },
 			PinSpec{ "Y", PinType::FLOAT },
@@ -67,7 +72,7 @@ Window::Window()
 		PinSpec{ "Value", PinType::VEC4 }
 	}
 	);
-	nodeSpecs.emplace_back("Lerp (Float)",
+	nodeSpecs.emplace_back("Lerp (Float)", "lerp",
 		std::vector<PinSpec>{
 		PinSpec{ "A", PinType::FLOAT },
 			PinSpec{ "B", PinType::FLOAT },
@@ -76,7 +81,7 @@ Window::Window()
 		PinSpec{ "Value", PinType::FLOAT }
 	}
 	);
-	nodeSpecs.emplace_back("Lerp (Vec2)",
+	nodeSpecs.emplace_back("Lerp (Vec2)", "lerp",
 		std::vector<PinSpec>{
 		PinSpec{ "A", PinType::VEC2 },
 			PinSpec{ "B", PinType::VEC2 },
@@ -85,7 +90,7 @@ Window::Window()
 		PinSpec{ "Value", PinType::VEC2 }
 	}
 	);
-	nodeSpecs.emplace_back("Lerp (Vec3)",
+	nodeSpecs.emplace_back("Lerp (Vec3)", "lerp",
 		std::vector<PinSpec>{
 		PinSpec{ "A", PinType::VEC3 },
 			PinSpec{ "B", PinType::VEC3 },
@@ -94,7 +99,7 @@ Window::Window()
 		PinSpec{ "Value", PinType::VEC3 }
 	}
 	);
-	nodeSpecs.emplace_back("Lerp (Vec4)",
+	nodeSpecs.emplace_back("Lerp (Vec4)", "lerp",
 		std::vector<PinSpec>{
 		PinSpec{ "A", PinType::VEC4 },
 			PinSpec{ "B", PinType::VEC4 },
@@ -103,14 +108,14 @@ Window::Window()
 		PinSpec{ "Value", PinType::VEC4 }
 	}
 	);
-	nodeSpecs.emplace_back("Floor",
+	nodeSpecs.emplace_back("Floor", "floor",
 		std::vector<PinSpec>{
 		PinSpec{ "X", PinType::FLOAT },
 	}, std::vector<PinSpec>{
 		PinSpec{ "Value", PinType::INT }
 	}
 	);
-	nodeSpecs.emplace_back("Integer Divide",
+	nodeSpecs.emplace_back("Integer Divide", "div",
 		std::vector<PinSpec>{
 		PinSpec{ "X", PinType::INT },
 			PinSpec{ "Y", PinType::INT },
@@ -127,7 +132,7 @@ Window::~Window()
 
 void Window::createNodeFromSpec(const NodeSpec& spec)
 {
-	nodes.emplace_back(nextId++, spec.name, spec.isConstant);
+	nodes.emplace_back(nextId++, spec.name, spec.isConstant, &spec);
 	for (const PinSpec& pinSpec : spec.inputs) {
 		nodes.back().inputs.emplace_back(nextId++, pinSpec.name, pinSpec.type);
 	}
@@ -139,7 +144,7 @@ void Window::createNodeFromSpec(const NodeSpec& spec)
 
 void Window::createNodeFromSpecAt(const NodeSpec& spec, ImVec2 position)
 {
-	nodes.emplace_back(nextId++, spec.name, spec.isConstant);
+	nodes.emplace_back(nextId++, spec.name, spec.isConstant, &spec);
 	for (const PinSpec& pinSpec : spec.inputs) {
 		nodes.back().inputs.emplace_back(nextId++, pinSpec.name, pinSpec.type);
 	}
@@ -275,7 +280,12 @@ void Window::doGui()
 			for (Node& node : nodes) {
 				ax::NodeEditor::BeginNode(node.id);
 				{
-					if (!node.isDataHook) {
+					if (node.isDataHook && node.inputs.size() == 0) { // no inputs
+						ImGui::SetNextItemWidth(100);
+						ImGui::PushID(node.id.Get());
+						ImGui::InputText("", node.data, 255);
+						ImGui::PopID();
+					} else {
 						// Node name
 						ImGui::Text(node.name.c_str());
 
@@ -292,36 +302,41 @@ void Window::doGui()
 							ax::NodeEditor::EndPin();
 
 							ImGui::SameLine();
+
+							// Label
 							ImGui::Text(inputPin.name.c_str());
 						}
 						ImGui::EndGroup();
 					}
-					else {
+
+					ImGui::SameLine();
+
+					if (node.isDataHook && node.outputs.size() == 0) { // no outputs
 						ImGui::SetNextItemWidth(100);
 						ImGui::PushID(node.id.Get());
 						ImGui::InputText("", node.data, 255);
 						ImGui::PopID();
-
-						ImGui::SameLine(); // Put the title on the same line as the outputs
 					}
+					else {
+						// Outputs
+						ImGui::BeginGroup();
+						for (Pin outputPin : node.outputs) {
+							// Label
+							ImGui::Text(outputPin.name.c_str());
 
-					// Outputs
-					ImGui::SameLine();
-					ImGui::BeginGroup();
-					for (Pin outputPin : node.outputs) {
-						ImGui::Text(outputPin.name.c_str());
-						ImGui::SameLine();
+							ImGui::SameLine();
 
-						ax::NodeEditor::BeginPin(outputPin.id, outputPin.kind);
-						{
-							// Icon
-							ImVec2 uv0, uv1;
-							this->getPinTypeTexCoords(outputPin.type, &uv0, &uv1);
-							ImGui::Image((ImTextureID)iconsTexture->getId(), ImVec2{ ICON_SIZE, ICON_SIZE }, uv0, uv1);
+							ax::NodeEditor::BeginPin(outputPin.id, outputPin.kind);
+							{
+								// Icon
+								ImVec2 uv0, uv1;
+								this->getPinTypeTexCoords(outputPin.type, &uv0, &uv1);
+								ImGui::Image((ImTextureID)iconsTexture->getId(), ImVec2{ ICON_SIZE, ICON_SIZE }, uv0, uv1);
+							}
+							ax::NodeEditor::EndPin();
 						}
-						ax::NodeEditor::EndPin();
+						ImGui::EndGroup();
 					}
-					ImGui::EndGroup();
 				}
 				ax::NodeEditor::EndNode();
 			}
@@ -359,6 +374,16 @@ void Window::doGui()
 		for (const NodeSpec& spec : nodeSpecs) {
 			if (ImGui::MenuItem(spec.name.c_str())) {
 				createNodeFromSpec(spec);
+			}
+		}
+
+		ImGui::Separator();
+		if (ImGui::Button("Compose Code for Selected")) {
+			ax::NodeEditor::NodeId selectedId;
+			ax::NodeEditor::GetSelectedNodes(&selectedId, 1);
+			if (!selectedId.Invalid) {
+				const Node* node = findNodeById(selectedId);
+				printf("%s", composeCodeForNode(node).c_str());
 			}
 		}
 	}
@@ -411,13 +436,14 @@ ImVec4 Window::getPinTypeColor(PinType type) {
 	case sm::maker::PinType::INT:
 		return ImVec4{ 252.f / 255.f, 72.f / 255.f, 72.f / 255.f, 1.f };
 	case sm::maker::PinType::VEC2:
+		return ImVec4{ 84.f / 255.f, 26.f / 255.f, 136.f / 255.f, 1.f };
 	case sm::maker::PinType::VEC3:
-	case sm::maker::PinType::VEC4:
 		return ImVec4{ 210.f / 255.f, 29.f / 255.f, 183.f / 255.f, 1.f };
+	case sm::maker::PinType::VEC4:
+		return ImVec4{ 226.f / 255.f, 215.f / 255.f, 38.f / 255.f, 1.f };
 	default:
 		return ImVec4{ 1.f, 0.f, 1.f, 1.f };
 	}
-
 }
 
 bool Window::canCastFrom(PinType from, PinType to)
@@ -460,4 +486,50 @@ const Pin* Window::findPinById(ax::NodeEditor::PinId id) const
 		}
 	}
 	return nullptr;
+}
+
+const Node* sm::maker::Window::findNodeById(ax::NodeEditor::NodeId id) const
+{
+	for (size_t i = 0; i < nodes.size(); i++) {
+		if (nodes[i].id == id) return &nodes[i];
+	}
+}
+
+const Link* Window::findLinkEndingAtId(ax::NodeEditor::PinId id) const
+{
+	for (size_t i = 0; i < links.size(); i++) {
+		if (links[i].endPinId == id) return &links[i];
+	}
+	return nullptr;
+}
+
+std::string Window::composeCodeForNode(const Node* node) {
+	if (node->isDataHook && node->inputs.size() == 0) { // Constant
+		return node->data;
+	}
+
+	std::string contents;
+	bool isAssignment = node->isDataHook && node->outputs.size() == 0;
+	if (isAssignment) { // Assignment (x = ...)
+		contents += node->data;
+		contents += " = ";
+	}
+	else { // Function
+		contents += node->spec->funcName;
+		contents += "(";
+	}
+
+	for (const Pin& inputPin : node->inputs) {
+		const Link* link = findLinkEndingAtId(inputPin.id);
+		contents += composeCodeForNode(link->startPin->node);
+	}
+
+	if (isAssignment) {
+		contents += ";";
+	}
+	else {
+		contents += ")";
+	}
+
+	return contents;
 }
