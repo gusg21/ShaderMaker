@@ -246,31 +246,47 @@ void Window::doGui()
 			}
 			ax::NodeEditor::EndCreate(); // Wraps up object creation action handling.
 
-			//if (ax::NodeEditor::BeginDelete())
-			//{
-			//	// There may be many links marked for deletion, let's loop over them.
-			//	ax::NodeEditor::LinkId deletedLinkId;
-			//	while (ax::NodeEditor::QueryDeletedLink(&deletedLinkId))
-			//	{
-			//		// If you agree that link can be deleted, accept deletion.
-			//		if (ax::NodeEditor::AcceptDeletedItem())
-			//		{
-			//			// Then remove link from your data.
-			//			for (const Link& link : links)
-			//			{
-			//				if (link.id == deletedLinkId)
-			//				{
-			//					links.erase(link);
-			//					break;
-			//				}
-			//			}
-			//		}
+			if (ax::NodeEditor::BeginDelete())
+			{
+				// There may be many links marked for deletion, let's loop over them.
+				ax::NodeEditor::LinkId deletedLinkId;
+				while (ax::NodeEditor::QueryDeletedLink(&deletedLinkId))
+				{
+					// If you agree that link can be deleted, accept deletion.
+					if (ax::NodeEditor::AcceptDeletedItem())
+					{
+						// Then remove link from your data.
+						for (size_t i = 0; i < links.size(); i++)
+						{
+							if (links[i].id == deletedLinkId)
+							{
+								links.erase(links.begin() + i);
+								break;
+							}
+						}
+					}
 
-			//		// You may reject link deletion by calling:
-			//		// ed::RejectDeletedItem();
-			//	}
-			//}
-			//ax::NodeEditor::EndDelete(); // Wrap up deletion action
+					// You may reject link deletion by calling:
+					// ed::RejectDeletedItem();
+				}
+
+                ax::NodeEditor::NodeId deletedNodeId;
+                while(ax::NodeEditor::QueryDeletedNode(&deletedNodeId))
+                {
+                    if(ax::NodeEditor::AcceptDeletedItem())
+                    {
+                        for (size_t i = 0; i < nodes.size(); i++)
+                        {
+                            if (nodes[i].id == deletedNodeId)
+                            {
+                                nodes.erase(nodes.begin() + i);
+                                break;
+                            }
+                        }
+                    }
+                }
+			}
+			ax::NodeEditor::EndDelete(); // Wrap up deletion action
 
 			// Nodes
 			for (Node& node : nodes) {
