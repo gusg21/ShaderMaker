@@ -20,13 +20,13 @@ namespace sm {
 		struct Pin {
 			ax::NodeEditor::PinId id;
 			ax::NodeEditor::PinKind kind;
+			ax::NodeEditor::NodeId nodeId;
 
-			Node* node;
 			std::string name;
 			PinType type;
 
-			Pin(int32_t id, const std::string& name, PinType type, Node* node, ax::NodeEditor::PinKind kind)
-				: id(id), name(name), type(type), kind(kind), node(node) {}
+			Pin(int32_t id, const std::string& name, PinType type, ax::NodeEditor::NodeId nodeId, ax::NodeEditor::PinKind kind)
+				: id(id), name(name), type(type), kind(kind), nodeId(nodeId) {}
 		};
 
 		struct NodeSpec;
@@ -93,7 +93,7 @@ namespace sm {
 			const Node* findNodeById(ax::NodeEditor::NodeId id) const;
 			const Link* findLinkEndingAtId(ax::NodeEditor::PinId id) const;
 
-			std::string composeCodeForNode(const Node* node);
+			std::string composeCodeForNodeId(ax::NodeEditor::NodeId node);
 
 		private:
 			uint32_t nextId = 0;

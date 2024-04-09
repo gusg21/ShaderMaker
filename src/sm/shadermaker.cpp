@@ -140,10 +140,10 @@ void Window::createNodeFromSpec(const NodeSpec& spec)
 	nodes.emplace_back(nextId++, spec.name, spec.isConstant, &spec);
 	Node* node = &nodes.back();
 	for (const PinSpec& pinSpec : spec.inputs) {
-		node->inputs.emplace_back(nextId++, pinSpec.name, pinSpec.type, node, ax::NodeEditor::PinKind::Input);
+		node->inputs.emplace_back(nextId++, pinSpec.name, pinSpec.type, node->id, ax::NodeEditor::PinKind::Input);
 	}
 	for (const PinSpec& pinSpec : spec.outputs) {
-		node->outputs.emplace_back(nextId++, pinSpec.name, pinSpec.type, node, ax::NodeEditor::PinKind::Output);
+		node->outputs.emplace_back(nextId++, pinSpec.name, pinSpec.type, node->id, ax::NodeEditor::PinKind::Output);
 	}
 }
 
@@ -152,10 +152,10 @@ void Window::createNodeFromSpecAt(const NodeSpec& spec, ImVec2 position)
 	nodes.emplace_back(nextId++, spec.name, spec.isConstant, &spec);
 	Node* node = &nodes.back();
 	for (const PinSpec& pinSpec : spec.inputs) {
-		node->inputs.emplace_back(nextId++, pinSpec.name, pinSpec.type, node, ax::NodeEditor::PinKind::Input);
+		node->inputs.emplace_back(nextId++, pinSpec.name, pinSpec.type, node->id, ax::NodeEditor::PinKind::Input);
 	}
 	for (const PinSpec& pinSpec : spec.outputs) {
-		node->outputs.emplace_back(nextId++, pinSpec.name, pinSpec.type, node, ax::NodeEditor::PinKind::Output);
+		node->outputs.emplace_back(nextId++, pinSpec.name, pinSpec.type, node->id, ax::NodeEditor::PinKind::Output);
 	}
 
 	ax::NodeEditor::SetNodePosition(node->id, position);
@@ -245,10 +245,6 @@ void Window::doGui()
 				}
 			}
 			ax::NodeEditor::EndCreate(); // Wraps up object creation action handling.
-			
-			for (const Link& link : links) {
-				printf("link from %d to %d\n", link.outPin->id.Get(), link.inPin->id.Get());
-			}
 
 			//if (ax::NodeEditor::BeginDelete())
 			//{
@@ -392,14 +388,16 @@ void Window::doGui()
 		if (ImGui::Button("Compose Code for Selected")) {
 			ax::NodeEditor::NodeId selectedId;
 			ax::NodeEditor::GetSelectedNodes(&selectedId, 1);
-			const Node* node = findNodeById(selectedId);
-			printf("%s", composeCodeForNode(node).c_str());
+			printf("%s", composeCodeForNodeId(selectedId).c_str());
 		}
 
 		ImGui::Text("Link Count: %d", links.size());
 		for (const Link& link : links) {
 			ImGui::Indent();
-			ImGui::Text("#%d: node %d out %d -> node %d in %d", link.id, link.outPin->node->id.Get(), link.outPin->id.Get(), link.inPin->node->id.Get(), link.inPin->id.Get());
+			ImGui::Text("#%d: node %d out %d -> node %d in %d", link.id, 
+				link.outPin->nodeId, link.outPin->id.Get(), 
+				link.inPin->nodeId.Get(), link.inPin->id.Get()
+			);
 			ImGui::Unindent();
 		}
 		ImGui::Text("Node Count: %d", nodes.size());
@@ -412,7 +410,7 @@ void Window::doGui()
 					ImGui::Text("inputs:");
 					ImGui::Indent();
 					for (const Pin& pin : node.inputs) {
-						ImGui::Text("%s#%d", pin.name.c_str(), pin.id);
+						ImGui::Text("%s#%d on node %d", pin.name.c_str(), pin.id, pin.nodeId.Get());
 					}
 					ImGui::Unindent();
 				}
@@ -422,7 +420,7 @@ void Window::doGui()
 					ImGui::Text("outputs:");
 					ImGui::Indent();
 					for (const Pin& pin : node.outputs) {
-						ImGui::Text("%s#%d", pin.name.c_str(), pin.id);
+						ImGui::Text("%s#%d on node %d", pin.name.c_str(), pin.id, pin.nodeId.Get());
 					}
 					ImGui::Unindent();
 				}
@@ -533,7 +531,7 @@ const Pin* Window::findPinById(ax::NodeEditor::PinId id) const
 	return nullptr;
 }
 
-const Node* sm::maker::Window::findNodeById(ax::NodeEditor::NodeId id) const
+const Node* Window::findNodeById(ax::NodeEditor::NodeId id) const
 {
 	for (size_t i = 0; i < nodes.size(); i++) {
 		if (nodes[i].id == id) return &nodes[i];
@@ -548,7 +546,8 @@ const Link* Window::findLinkEndingAtId(ax::NodeEditor::PinId id) const
 	return nullptr;
 }
 
-std::string Window::composeCodeForNode(const Node* node) {
+std::string Window::composeCodeForNodeId(ax::NodeEditor::NodeId nodeId) {
+	const Node* node = findNodeById(nodeId);
 	if (node->isDataHook && node->inputs.size() == 0) { // Constant
 		return std::string(node->data);
 	}
@@ -564,10 +563,12 @@ std::string Window::composeCodeForNode(const Node* node) {
 		contents += "(";
 	}
 
-	for (const Pin& inputPin : node->inputs) {
-		const Link* link = findLinkEndingAtId(inputPin.id);
-		if (link == nullptr) return "#ERR(no link ending #" + std::to_string(inputPin.id.Get()) + ")";
-		contents += composeCodeForNode(link->outPin->node);
+	for (size_t i = 0; i < node->inputs.size(); i++) {
+		const Pin* pin = &node->inputs[i];
+		const Link* link = findLinkEndingAtId(pin->id);
+		if (link == nullptr) return "#ERR(no link ending #" + std::to_string(pin->id.Get()) + ")";
+		contents += composeCodeForNodeId(link->outPin->nodeId);
+		if (i < node->inputs.size() - 1) contents += ", ";
 	}
 
 	if (isAssignment) {
