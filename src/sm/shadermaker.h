@@ -50,15 +50,12 @@ namespace sm {
 
 		struct Link {
 			ax::NodeEditor::LinkId id;
-
-			ax::NodeEditor::PinId inPinId;
-			ax::NodeEditor::PinId outPinId;
 			
 			const Pin* inPin;
 			const Pin* outPin;
 
 			Link(int32_t id, const Pin* inPin, const Pin* outPin) 
-				: id(id), inPin(inPin), outPin(outPin), inPinId(inPin->id), outPinId(outPin->id) {}
+				: id(id), inPin(inPin), outPin(outPin) {}
 		};
 
 		struct PinSpec {

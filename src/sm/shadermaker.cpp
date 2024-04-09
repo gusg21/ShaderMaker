@@ -24,7 +24,7 @@ Window::Window()
 		std::vector<PinSpec>{
 		PinSpec{ "Value", PinType::VEC3 }
 	}, std::vector<PinSpec>{}, true
-	);
+			);
 	nodeSpecs.emplace_back("Constant (Float)", "",
 		std::vector<PinSpec>{}, std::vector<PinSpec>{
 		PinSpec{ "Value", PinType::FLOAT }
@@ -200,7 +200,9 @@ void Window::doGui()
 				{
 					if (startPinId && endPinId) // both are valid, let's accept link
 					{
-						const Pin* inPin, * outPin;
+						// Determine which pin is Input and which is Output
+						const Pin* inPin;
+						const Pin* outPin;
 						const Pin* startPin = findPinById(startPinId);
 						const Pin* endPin = findPinById(endPinId);
 						if (startPin->kind == ax::NodeEditor::PinKind::Input) {
@@ -212,12 +214,15 @@ void Window::doGui()
 							outPin = startPin;
 						}
 
+						// Make sure we're connecting input to output and the types are compatible
 						bool isInToOut = inPin->kind != outPin->kind;
 						bool areTypesCompat = canCastFrom(outPin->type, inPin->type);
 						if (isInToOut && areTypesCompat && ax::NodeEditor::AcceptNewItem())
 						{
 							// Since we accepted new link, lets add one to our list of links.
+							printf("link from %d to %d\n", outPin->id.Get(), inPin->id.Get());
 							links.emplace_back(nextId++, inPin, outPin);
+							printf("link from %d to %d\n", outPin->id.Get(), inPin->id.Get());
 						}
 					}
 					else {
@@ -240,6 +245,10 @@ void Window::doGui()
 				}
 			}
 			ax::NodeEditor::EndCreate(); // Wraps up object creation action handling.
+			
+			for (const Link& link : links) {
+				printf("link from %d to %d\n", link.outPin->id.Get(), link.inPin->id.Get());
+			}
 
 			//if (ax::NodeEditor::BeginDelete())
 			//{
@@ -278,7 +287,8 @@ void Window::doGui()
 						ImGui::SameLine();
 						ImGui::Text("%d", node.id.Get());
 						ImGui::PopID();
-					} else {
+					}
+					else {
 						// Node name
 						ImGui::Text(node.name.c_str());
 						ImGui::SameLine();
@@ -344,7 +354,7 @@ void Window::doGui()
 
 			// Links
 			for (const Link& link : links) {
-				ax::NodeEditor::Link(link.id, link.inPinId, link.outPinId, getPinTypeColor(link.inPin->type));
+				ax::NodeEditor::Link(link.id, link.inPin->id, link.outPin->id, getPinTypeColor(link.inPin->type));
 			}
 
 			// Popups
@@ -389,7 +399,7 @@ void Window::doGui()
 		ImGui::Text("Link Count: %d", links.size());
 		for (const Link& link : links) {
 			ImGui::Indent();
-			ImGui::Text("#%d: node %d out %d -> node %d in %d", link.id, link.outPin->node->id.Get(), link.outPinId.Get(), link.inPin->node->id.Get(), link.inPinId.Get());
+			ImGui::Text("#%d: node %d out %d -> node %d in %d", link.id, link.outPin->node->id.Get(), link.outPin->id.Get(), link.inPin->node->id.Get(), link.inPin->id.Get());
 			ImGui::Unindent();
 		}
 		ImGui::Text("Node Count: %d", nodes.size());
@@ -533,7 +543,7 @@ const Node* sm::maker::Window::findNodeById(ax::NodeEditor::NodeId id) const
 const Link* Window::findLinkEndingAtId(ax::NodeEditor::PinId id) const
 {
 	for (size_t i = 0; i < links.size(); i++) {
-		if (links[i].inPinId == id) return &links[i];
+		if (links[i].inPin->id == id) return &links[i];
 	}
 	return nullptr;
 }
