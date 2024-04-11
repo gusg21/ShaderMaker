@@ -279,6 +279,23 @@ void Window::doGui()
                         {
                             if (nodes[i].id == deletedNodeId)
                             {
+                                for(size_t j = 0; j < links.size(); j++)
+                                {
+                                    Link* link = &links[j];
+
+                                    if(link == nullptr) continue;
+
+                                    if(link->inPin->nodeId == deletedNodeId)
+                                    {
+                                        links.erase(links.begin() + j);
+                                    }
+
+                                    if(link->outPin->nodeId == deletedNodeId)
+                                    {
+                                        links.erase(links.begin() + j);
+                                    }
+                                }
+
                                 nodes.erase(nodes.begin() + i);
                                 break;
                             }
