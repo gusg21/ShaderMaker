@@ -96,7 +96,7 @@ namespace sm {
 			std::string composeCodeForNodeId(ax::NodeEditor::NodeId node);
 
 		private:
-			uint32_t nextId = 0;
+			uint32_t nextId = 1;
 
 			ax::NodeEditor::EditorContext* context;
 			sm::Texture* iconsTexture;
