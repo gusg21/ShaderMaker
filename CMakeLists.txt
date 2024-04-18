@@ -32,8 +32,14 @@ add_executable(ShaderMaker
         "src/sm/transform.h"
         "src/sm/texture.h"
         "src/sm/texture.cpp" 
-        "src/sm/shadermaker.cpp" 
-        "src/sm/shadermaker.h")
+        "src/sm/maker/window.cpp"
+        "src/sm/maker/window.h"
+        "src/sm/maker/pin.h"
+        src/sm/maker/node.h
+        src/sm/maker/node.h
+        src/sm/maker/nodespec.h
+        src/sm/maker/pinspec.h
+        src/sm/maker/link.h)
 
 # OpenGL
 find_package(OpenGL REQUIRED)
