@@ -575,7 +575,7 @@ const Link *Window::findLinkEndingAtId(ax::NodeEditor::PinId id) const {
     return nullptr;
 }
 
-std::string Window::composeCodeForNodeId(ax::NodeEditor::NodeId nodeId) {
+std::string Window::composeCodeForNodeId(const ax::NodeEditor::NodeId nodeId) const {
     const Node *node = findNodeById(nodeId);
     if (node->isDataHook && node->inputs.size() == 0) { // Constant
         return std::string(node->data);

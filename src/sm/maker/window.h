@@ -37,7 +37,7 @@ namespace sm {
 
             const Link *findLinkEndingAtId(ax::NodeEditor::PinId id) const;
 
-            std::string composeCodeForNodeId(ax::NodeEditor::NodeId node);
+            std::string composeCodeForNodeId(const ax::NodeEditor::NodeId node) const;
 
         private:
             uint32_t nextId = 1;
