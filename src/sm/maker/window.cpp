@@ -14,8 +14,8 @@ Window::Window(const std::vector<PinSpec> &shaderInputs, const std::vector<PinSp
 
     iconsTexture = new Texture("assets/textures/icons/icons.png");
 
-    nodeSpecs.emplace_back("Shader Inputs", "", std::vector<PinSpec>{}, shaderInputs, true, false, true);
-    nodeSpecs.emplace_back("Shader Outputs", "", shaderOutputs, std::vector<PinSpec>{}, true, true, false);
+    nodeSpecs.emplace_back("Shader Inputs", "", std::vector<PinSpec>{}, shaderInputs, false, false, true);
+    nodeSpecs.emplace_back("Shader Outputs", "", shaderOutputs, std::vector<PinSpec>{}, false, true, false);
 
     nodeSpecs.emplace_back("Output Assignment (Int)", "",
                            std::vector<PinSpec>{
@@ -558,20 +558,20 @@ const Pin *Window::findPinById(ax::NodeEditor::PinId id) const {
 
 ax::NodeEditor::NodeId Window::getOutputNodeId() const {
     for (size_t i = 0; i < nodes.size(); i++) {
-        if (nodes[i].isOutputOnly) return nodes[i].id;
+        if (nodes[i].isInputOnly) return nodes[i].id;
     }
     return {}; // Should never happen! Fingers crossed :)
 }
 
 const Node *Window::findNodeById(ax::NodeEditor::NodeId id) const {
     for (size_t i = 0; i < nodes.size(); i++) {
-        if (nodes[i].id == id) return &nodes[i];
+        if (nodes[i].id.Get() == id.Get()) return &nodes[i];
     }
 }
 
 const Link *Window::findLinkEndingAtId(ax::NodeEditor::PinId id) const {
     for (size_t i = 0; i < links.size(); i++) {
-        if (links[i].inPin->id == id) return &links[i];
+        if (links[i].inPin->id.Get() == id.Get()) return &links[i];
     }
     return nullptr;
 }
@@ -584,11 +584,15 @@ std::string Window::composeCodeForNodeId(const ax::NodeEditor::NodeId nodeId) co
 
     std::string contents{};
     bool isAssignment = node->isDataHook && node->outputs.size() == 0;
+    bool isOutputNode = node->isInputOnly;
     if (isAssignment) { // Assignment (x = ...)
         contents += node->data;
         contents += " = ";
     } else if (node->isOutputOnly) { // Shader INPUTS
-    } else if (node->isInputOnly) { // Shader OUTPUTS
+        printf("ERROR: Shouldn't be visiting Shader Input node\n");
+    } else if (isOutputNode) { // Shader OUTPUTS
+        contents += node->inputs.front().name; // First pin name
+        contents += " = ";
     } else { // Function
         contents += node->spec->funcName;
         contents += "(";
@@ -598,11 +602,17 @@ std::string Window::composeCodeForNodeId(const ax::NodeEditor::NodeId nodeId) co
         const Pin *pin = &node->inputs[i];
         const Link *link = findLinkEndingAtId(pin->id);
         if (link == nullptr) return "#ERR(no link ending #" + std::to_string(pin->id.Get()) + ")";
-        contents += composeCodeForNodeId(link->outPin->nodeId);
+        const Node* otherNode = findNodeById(link->outPin->nodeId);
+        if (otherNode->isOutputOnly) {
+            contents += link->outPin->name;
+        }
+        else {
+            contents += composeCodeForNodeId(link->outPin->nodeId);
+        }
         if (i < node->inputs.size() - 1) contents += ", ";
     }
 
-    if (isAssignment) {
+    if (isAssignment || isOutputNode) {
         contents += ";";
     } else {
         contents += ")";

@@ -102,6 +102,8 @@ int main(int argc, char *argv[]) {
                         {"out_vColor", sm::maker::PinType::VEC4},
                 },
         };
+        ax::NodeEditor::NodeId outputNodeId{};
+        std::string generatedCode{};
 
         // Load and bind the textures
         auto *roofColor = new sm::Texture("assets/textures/roof_color.png");
@@ -164,8 +166,11 @@ int main(int argc, char *argv[]) {
             ImGui::Begin("Compose Window", nullptr);
             {
                 if (ImGui::Button("MAKE NEW SHADER")) {
-                    maker.composeCodeForNodeId(maker.getOutputNodeId());
+                    outputNodeId = maker.getOutputNodeId();
+                    generatedCode = maker.composeCodeForNodeId(outputNodeId);
                 }
+                ImGui::Text("Output Node ID: %d", outputNodeId.Get());
+                ImGui::Text("Generated GLSL: %s", generatedCode.c_str());
             }
             ImGui::End();
 
