@@ -39,7 +39,9 @@ add_executable(ShaderMaker
         src/sm/maker/node.h
         src/sm/maker/nodespec.h
         src/sm/maker/pinspec.h
-        src/sm/maker/link.h)
+        src/sm/maker/link.h
+        src/sm/maker/savegraph.cpp
+        src/sm/maker/savegraph.h)
 
 # OpenGL
 find_package(OpenGL REQUIRED)

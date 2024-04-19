@@ -160,6 +160,20 @@ void Window::createNodeFromSpecAt(const NodeSpec &spec, ImVec2 position) {
     ax::NodeEditor::SetNodePosition(node->id, position);
 }
 
+void Window::createNodeAt(const Node &node, ImVec2 position)
+{
+    nodes.emplace_back(nextId++, node.name, node.isDataHook, node.isInputOnly, node.isOutputOnly, &node.spec);
+    Node *newNode = &nodes.back();
+    for (const Pin &nodeInput: node.inputs) {
+        newNode->inputs.emplace_back(nextId++, nodeInput.name, nodeInput.type, newNode->id, ax::NodeEditor::PinKind::Input);
+    }
+    for (const Pin &nodeOutput: node.outputs) {
+        newNode->outputs.emplace_back(nextId++, nodeOutput.name, nodeOutput.type, newNode->id, ax::NodeEditor::PinKind::Output);
+    }
+
+    ax::NodeEditor::SetNodePosition(node.id, position);
+}
+
 void Window::doGui() {
     ImGui::Begin("Shader Maker");
     {
@@ -600,4 +614,16 @@ std::string Window::composeCodeForNodeId(ax::NodeEditor::NodeId nodeId) {
     }
 
     return contents;
+}
+
+const std::vector<Node> Window::getNodes() {
+    return nodes;
+}
+
+const std::vector<NodeSpec> Window::getNodeSpecs() {
+    return nodeSpecs;
+}
+
+const std::vector<Link> Window::getLinks() {
+    return links;
 }

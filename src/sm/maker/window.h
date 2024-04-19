@@ -23,6 +23,8 @@ namespace sm {
 
             void createNodeFromSpecAt(const NodeSpec &spec, ImVec2 position);
 
+            void createNodeAt(const Node &node, ImVec2 position);
+
             void getPinTypeTexCoords(PinType type, ImVec2 *uv0, ImVec2 *uv1);
 
             ImVec4 getPinTypeColor(PinType type);
@@ -37,6 +39,10 @@ namespace sm {
 
             std::string composeCodeForNodeId(ax::NodeEditor::NodeId node);
 
+            const std::vector<Node> getNodes();
+            const std::vector<NodeSpec> getNodeSpecs();
+            const std::vector<Link> getLinks();
+
         private:
             uint32_t nextId = 1;
 
@@ -46,6 +52,8 @@ namespace sm {
             std::vector<NodeSpec> nodeSpecs;
             std::vector<Node> nodes;
             std::vector<Link> links;
+
+
         };
     }
 }
