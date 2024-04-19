@@ -29,7 +29,7 @@ namespace sm {
 
             bool canCastFrom(PinType from, PinType to);
 
-            const Node* Window::getOutputNode() const;
+            ax::NodeEditor::NodeId Window::getOutputNodeId() const;
 
             const Pin *findPinById(ax::NodeEditor::PinId id) const;
 

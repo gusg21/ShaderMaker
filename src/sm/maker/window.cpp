@@ -556,10 +556,11 @@ const Pin *Window::findPinById(ax::NodeEditor::PinId id) const {
     return nullptr;
 }
 
-const Node* Window::getOutputNode() const {
+ax::NodeEditor::NodeId Window::getOutputNodeId() const {
     for (size_t i = 0; i < nodes.size(); i++) {
-        if (nodes[i].isOutputOnly) return &nodes[i];
+        if (nodes[i].isOutputOnly) return nodes[i].id;
     }
+    return {}; // Should never happen! Fingers crossed :)
 }
 
 const Node *Window::findNodeById(ax::NodeEditor::NodeId id) const {
@@ -586,6 +587,8 @@ std::string Window::composeCodeForNodeId(const ax::NodeEditor::NodeId nodeId) co
     if (isAssignment) { // Assignment (x = ...)
         contents += node->data;
         contents += " = ";
+    } else if (node->isOutputOnly) { // Shader INPUTS
+    } else if (node->isInputOnly) { // Shader OUTPUTS
     } else { // Function
         contents += node->spec->funcName;
         contents += "(";
