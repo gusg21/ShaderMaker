@@ -161,6 +161,14 @@ int main(int argc, char *argv[]) {
             // Shader Maker
             maker.doGui();
 
+            ImGui::Begin("Compose Window", nullptr);
+            {
+                if (ImGui::Button("MAKE NEW SHADER")) {
+                    maker.composeCodeForNodeId(maker.getOutputNodeId());
+                }
+            }
+            ImGui::End();
+
             // Spin da monkey
             monkeyTransform.rotation = glm::rotate(monkeyTransform.rotation, 1.f * deltaTime, glm::vec3(0, 1, 0));
 
