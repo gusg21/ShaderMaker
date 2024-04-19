@@ -556,6 +556,12 @@ const Pin *Window::findPinById(ax::NodeEditor::PinId id) const {
     return nullptr;
 }
 
+const Node* Window::getOutputNode() const {
+    for (size_t i = 0; i < nodes.size(); i++) {
+        if (nodes[i].isOutputOnly) return &nodes[i];
+    }
+}
+
 const Node *Window::findNodeById(ax::NodeEditor::NodeId id) const {
     for (size_t i = 0; i < nodes.size(); i++) {
         if (nodes[i].id == id) return &nodes[i];
