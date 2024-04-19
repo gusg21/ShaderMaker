@@ -79,6 +79,58 @@ Window::Window(const std::vector<PinSpec> &shaderInputs, const std::vector<PinSp
                     PinSpec{"Value", PinType::VEC4}
             }
     );
+    nodeSpecs.emplace_back("Multiply (Float)", "multiply",
+        std::vector<PinSpec>{
+        PinSpec{ "A", PinType::FLOAT },
+            PinSpec{ "B", PinType::FLOAT }
+    }, std::vector<PinSpec>{
+        PinSpec{ "Value", PinType::FLOAT }
+    }
+    );
+    nodeSpecs.emplace_back("Subtract (Float)", "subtract",
+        std::vector<PinSpec>{
+        PinSpec{ "A", PinType::FLOAT },
+            PinSpec{ "B", PinType::FLOAT }
+    }, std::vector<PinSpec>{
+        PinSpec{ "Value", PinType::FLOAT }
+    }
+    );
+    nodeSpecs.emplace_back("Invert (float)", "invert",
+        std::vector<PinSpec>{
+        PinSpec{ "Input", PinType::FLOAT },
+    }, std::vector<PinSpec>{
+        PinSpec{ "Inverted", PinType::FLOAT }
+    }
+    );
+    nodeSpecs.emplace_back("Invert (Vec3)", "invert",
+        std::vector<PinSpec>{
+        PinSpec{ "Input", PinType::VEC3 },
+    }, std::vector<PinSpec>{
+        PinSpec{ "Inverted", PinType::VEC3 }
+    }
+    );
+    nodeSpecs.emplace_back("Get .rgb", "get_rgb",
+        std::vector<PinSpec>{
+        PinSpec{ "Input", PinType::VEC4 },
+    }, std::vector<PinSpec>{
+        PinSpec{ "RGB", PinType::VEC3 }
+    }
+    );
+    nodeSpecs.emplace_back("Normalize (Vec3)", "normalize",
+        std::vector<PinSpec>{
+        PinSpec{ "Input", PinType::VEC3 },
+    }, std::vector<PinSpec>{
+        PinSpec{ "Normalized", PinType::VEC3 }
+    }
+    );
+    nodeSpecs.emplace_back("Sample Texture", "texture",
+        std::vector<PinSpec>{
+        PinSpec{ "Texture", PinType::SAMPLER2D },
+            PinSpec{ "UV", PinType::VEC2 },
+    }, std::vector<PinSpec>{
+        PinSpec{ "RGBA", PinType::VEC4 }
+    }
+    );
     nodeSpecs.emplace_back("Lerp (Float)", "lerp",
                            std::vector<PinSpec>{
                                    PinSpec{"A", PinType::FLOAT},
