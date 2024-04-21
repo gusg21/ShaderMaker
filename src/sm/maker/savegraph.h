@@ -11,7 +11,7 @@
     {
         class savegraph {
         public:
-            bool saveGraphToFile(std::string fileName, Window maker);
+            static bool saveGraphToFile(std::string fileName, Window maker);
         };
 
     }

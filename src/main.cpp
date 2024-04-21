@@ -6,6 +6,7 @@
 
 #include "sm/shader.h"
 #include "sm/maker/window.h"
+#include "sm/maker/savegraph.h"
 #include "sm/model.h"
 #include "sm/camera.h"
 #include "sm/transform.h"
@@ -168,6 +169,10 @@ int main(int argc, char *argv[]) {
                 if (ImGui::Button("MAKE NEW SHADER")) {
                     outputNodeId = maker.getOutputNodeId();
                     generatedCode = maker.composeCodeForNodeId(outputNodeId);
+                }
+
+                if(ImGui::Button("SAVE SHADER")) {
+                    sm::maker::savegraph::saveGraphToFile("temp.txt", maker);
                 }
                 ImGui::Text("Output Node ID: %d", outputNodeId.Get());
                 ImGui::Text("Generated GLSL: %s", generatedCode.c_str());
