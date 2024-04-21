@@ -102,6 +102,8 @@ int main(int argc, char *argv[]) {
                         {"out_vColor", sm::maker::PinType::VEC4},
                 },
         };
+        ax::NodeEditor::NodeId outputNodeId{};
+        std::string generatedCode{};
 
         // Load and bind the textures
         auto *roofColor = new sm::Texture("assets/textures/roof_color.png");
@@ -160,6 +162,17 @@ int main(int argc, char *argv[]) {
 
             // Shader Maker
             maker.doGui();
+
+            ImGui::Begin("Compose Window", nullptr);
+            {
+                if (ImGui::Button("MAKE NEW SHADER")) {
+                    outputNodeId = maker.getOutputNodeId();
+                    generatedCode = maker.composeCodeForNodeId(outputNodeId);
+                }
+                ImGui::Text("Output Node ID: %d", outputNodeId.Get());
+                ImGui::Text("Generated GLSL: %s", generatedCode.c_str());
+            }
+            ImGui::End();
 
             // Spin da monkey
             monkeyTransform.rotation = glm::rotate(monkeyTransform.rotation, 1.f * deltaTime, glm::vec3(0, 1, 0));

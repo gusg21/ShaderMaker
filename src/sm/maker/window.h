@@ -31,13 +31,15 @@ namespace sm {
 
             bool canCastFrom(PinType from, PinType to);
 
+            ax::NodeEditor::NodeId Window::getOutputNodeId() const;
+
             const Pin *findPinById(ax::NodeEditor::PinId id) const;
 
             const Node *findNodeById(ax::NodeEditor::NodeId id) const;
 
             const Link *findLinkEndingAtId(ax::NodeEditor::PinId id) const;
 
-            std::string composeCodeForNodeId(ax::NodeEditor::NodeId node);
+            std::string composeCodeForNodeId(const ax::NodeEditor::NodeId node) const;
 
             const std::vector<Node> getNodes();
             const std::vector<NodeSpec> getNodeSpecs();

@@ -14,8 +14,8 @@ Window::Window(const std::vector<PinSpec> &shaderInputs, const std::vector<PinSp
 
     iconsTexture = new Texture("assets/textures/icons/icons.png");
 
-    nodeSpecs.emplace_back("Shader Inputs", "", std::vector<PinSpec>{}, shaderInputs, true, false, true);
-    nodeSpecs.emplace_back("Shader Outputs", "", shaderOutputs, std::vector<PinSpec>{}, true, true, false);
+    nodeSpecs.emplace_back("Shader Inputs", "", std::vector<PinSpec>{}, shaderInputs, false, false, true);
+    nodeSpecs.emplace_back("Shader Outputs", "", shaderOutputs, std::vector<PinSpec>{}, false, true, false);
 
     nodeSpecs.emplace_back("Output Assignment (Int)", "",
                            std::vector<PinSpec>{
@@ -78,6 +78,58 @@ Window::Window(const std::vector<PinSpec> &shaderInputs, const std::vector<PinSp
                            }, std::vector<PinSpec>{
                     PinSpec{"Value", PinType::VEC4}
             }
+    );
+    nodeSpecs.emplace_back("Multiply (Float)", "multiply",
+        std::vector<PinSpec>{
+        PinSpec{ "A", PinType::FLOAT },
+            PinSpec{ "B", PinType::FLOAT }
+    }, std::vector<PinSpec>{
+        PinSpec{ "Value", PinType::FLOAT }
+    }
+    );
+    nodeSpecs.emplace_back("Subtract (Float)", "subtract",
+        std::vector<PinSpec>{
+        PinSpec{ "A", PinType::FLOAT },
+            PinSpec{ "B", PinType::FLOAT }
+    }, std::vector<PinSpec>{
+        PinSpec{ "Value", PinType::FLOAT }
+    }
+    );
+    nodeSpecs.emplace_back("Invert (float)", "invert",
+        std::vector<PinSpec>{
+        PinSpec{ "Input", PinType::FLOAT },
+    }, std::vector<PinSpec>{
+        PinSpec{ "Inverted", PinType::FLOAT }
+    }
+    );
+    nodeSpecs.emplace_back("Invert (Vec3)", "invert",
+        std::vector<PinSpec>{
+        PinSpec{ "Input", PinType::VEC3 },
+    }, std::vector<PinSpec>{
+        PinSpec{ "Inverted", PinType::VEC3 }
+    }
+    );
+    nodeSpecs.emplace_back("Get .rgb", "get_rgb",
+        std::vector<PinSpec>{
+        PinSpec{ "Input", PinType::VEC4 },
+    }, std::vector<PinSpec>{
+        PinSpec{ "RGB", PinType::VEC3 }
+    }
+    );
+    nodeSpecs.emplace_back("Normalize (Vec3)", "normalize",
+        std::vector<PinSpec>{
+        PinSpec{ "Input", PinType::VEC3 },
+    }, std::vector<PinSpec>{
+        PinSpec{ "Normalized", PinType::VEC3 }
+    }
+    );
+    nodeSpecs.emplace_back("Sample Texture", "texture",
+        std::vector<PinSpec>{
+        PinSpec{ "Texture", PinType::SAMPLER2D },
+            PinSpec{ "UV", PinType::VEC2 },
+    }, std::vector<PinSpec>{
+        PinSpec{ "RGBA", PinType::VEC4 }
+    }
     );
     nodeSpecs.emplace_back("Lerp (Float)", "lerp",
                            std::vector<PinSpec>{
@@ -570,20 +622,27 @@ const Pin *Window::findPinById(ax::NodeEditor::PinId id) const {
     return nullptr;
 }
 
+ax::NodeEditor::NodeId Window::getOutputNodeId() const {
+    for (size_t i = 0; i < nodes.size(); i++) {
+        if (nodes[i].isInputOnly) return nodes[i].id;
+    }
+    return {}; // Should never happen! Fingers crossed :)
+}
+
 const Node *Window::findNodeById(ax::NodeEditor::NodeId id) const {
     for (size_t i = 0; i < nodes.size(); i++) {
-        if (nodes[i].id == id) return &nodes[i];
+        if (nodes[i].id.Get() == id.Get()) return &nodes[i];
     }
 }
 
 const Link *Window::findLinkEndingAtId(ax::NodeEditor::PinId id) const {
     for (size_t i = 0; i < links.size(); i++) {
-        if (links[i].inPin->id == id) return &links[i];
+        if (links[i].inPin->id.Get() == id.Get()) return &links[i];
     }
     return nullptr;
 }
 
-std::string Window::composeCodeForNodeId(ax::NodeEditor::NodeId nodeId) {
+std::string Window::composeCodeForNodeId(const ax::NodeEditor::NodeId nodeId) const {
     const Node *node = findNodeById(nodeId);
     if (node->isDataHook && node->inputs.size() == 0) { // Constant
         return std::string(node->data);
@@ -591,8 +650,14 @@ std::string Window::composeCodeForNodeId(ax::NodeEditor::NodeId nodeId) {
 
     std::string contents{};
     bool isAssignment = node->isDataHook && node->outputs.size() == 0;
+    bool isOutputNode = node->isInputOnly;
     if (isAssignment) { // Assignment (x = ...)
         contents += node->data;
+        contents += " = ";
+    } else if (node->isOutputOnly) { // Shader INPUTS
+        printf("ERROR: Shouldn't be visiting Shader Input node\n");
+    } else if (isOutputNode) { // Shader OUTPUTS
+        contents += node->inputs.front().name; // First pin name
         contents += " = ";
     } else { // Function
         contents += node->spec->funcName;
@@ -603,11 +668,17 @@ std::string Window::composeCodeForNodeId(ax::NodeEditor::NodeId nodeId) {
         const Pin *pin = &node->inputs[i];
         const Link *link = findLinkEndingAtId(pin->id);
         if (link == nullptr) return "#ERR(no link ending #" + std::to_string(pin->id.Get()) + ")";
-        contents += composeCodeForNodeId(link->outPin->nodeId);
+        const Node* otherNode = findNodeById(link->outPin->nodeId);
+        if (otherNode->isOutputOnly) {
+            contents += link->outPin->name;
+        }
+        else {
+            contents += composeCodeForNodeId(link->outPin->nodeId);
+        }
         if (i < node->inputs.size() - 1) contents += ", ";
     }
 
-    if (isAssignment) {
+    if (isAssignment || isOutputNode) {
         contents += ";";
     } else {
         contents += ")";
