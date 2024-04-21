@@ -19,12 +19,12 @@ namespace sm {
 
             for(size_t i = 0; i < nodes.size(); i++)
             {
-                auto nodePos = ax::NodeEditor::GetNodePosition(nodes[i].id);
+                Node* node = &nodes[i];
+                auto nodePos = ax::NodeEditor::GetNodePosition(node->id);
 
                 fileOutput << nodePos.x << " " << nodePos.y << "\n";
 
-                fileOutput << nodes[i].id.Get() << " " << nodes[i].name << " " << nodes[i].isDataHook << " "
-                           << nodes[i].isInputOnly << " " << nodes[i].isOutputOnly << " " << nodes[i].spec << "\n";
+                fileOutput << node->spec << "\n";
             }
 
             fileOutput << "Links\n";
@@ -33,6 +33,8 @@ namespace sm {
             {
                 fileOutput << link.id.Get() << " " << link.inPin << " " << link.outPin << "\n";
             }
+
+            fileOutput.close();
 
             return true;
         }

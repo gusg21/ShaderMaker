@@ -160,7 +160,7 @@ void Window::createNodeFromSpecAt(const NodeSpec &spec, ImVec2 position) {
     ax::NodeEditor::SetNodePosition(node->id, position);
 }
 
-void Window::createNodeAt(const Node &node, ImVec2 position)
+/*void Window::createNodeAt(const Node &node, ImVec2 position)
 {
     nodes.emplace_back(nextId++, node.name, node.isDataHook, node.isInputOnly, node.isOutputOnly, &node.spec);
     Node *newNode = &nodes.back();
@@ -172,7 +172,7 @@ void Window::createNodeAt(const Node &node, ImVec2 position)
     }
 
     ax::NodeEditor::SetNodePosition(node.id, position);
-}
+}*/
 
 void Window::doGui() {
     ImGui::Begin("Shader Maker");
