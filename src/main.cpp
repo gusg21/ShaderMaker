@@ -10,6 +10,7 @@
 #include "sm/camera.h"
 #include "sm/transform.h"
 #include "sm/texture.h"
+#include "sm/shaderGenerator.h"
 
 #define SCREEN_WIDTH 1600
 #define SCREEN_HEIGHT 900
@@ -122,6 +123,9 @@ int main(int argc, char *argv[]) {
         shader->setInt("u_texMain", 0);
         shader->setInt("u_texNormal", 1);
 
+        //Shader generator
+        sm::ShaderGenerator shaderGen("assets/test.vert", "assets/test.frag");
+
         // Camera
         auto *camera = new sm::Camera();
         camera->position = glm::vec3(0.0f, 0.0f, 5.0f);
@@ -168,6 +172,7 @@ int main(int argc, char *argv[]) {
                 if (ImGui::Button("MAKE NEW SHADER")) {
                     outputNodeId = maker.getOutputNodeId();
                     generatedCode = maker.composeCodeForNodeId(outputNodeId);
+                    
                 }
                 ImGui::Text("Output Node ID: %d", outputNodeId.Get());
                 ImGui::Text("Generated GLSL: %s", generatedCode.c_str());

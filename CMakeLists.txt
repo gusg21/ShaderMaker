@@ -23,6 +23,7 @@ add_executable(ShaderMaker
         "src/external/stb_image.cpp"
         "src/main.cpp"
         "src/sm/shader.cpp"
+        "src/sm/shadergenerator.cpp"
         "src/sm/model.cpp"
         "src/sm/model.h"
         "src/sm/mesh.cpp"
