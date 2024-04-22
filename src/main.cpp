@@ -124,7 +124,7 @@ int main(int argc, char *argv[]) {
         shader->setInt("u_texNormal", 1);
 
         //Shader generator
-        sm::ShaderGenerator shaderGen("assets/test.vert", "assets/test.frag");
+        sm::ShaderGenerator shaderGen("assets/test.vert", "assets/template.frag", "assets/test.frag");
 
         // Camera
         auto *camera = new sm::Camera();
@@ -172,7 +172,8 @@ int main(int argc, char *argv[]) {
                 if (ImGui::Button("MAKE NEW SHADER")) {
                     outputNodeId = maker.getOutputNodeId();
                     generatedCode = maker.composeCodeForNodeId(outputNodeId);
-                    
+                    shaderGen.generatedShader = shaderGen.generateShader(generatedCode);
+                    shaderGen.hasCode = true;
                 }
                 ImGui::Text("Output Node ID: %d", outputNodeId.Get());
                 ImGui::Text("Generated GLSL: %s", generatedCode.c_str());
@@ -187,14 +188,32 @@ int main(int argc, char *argv[]) {
             glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            // Update positions and transforms
-            shader->use();
-            shader->setMat4("u_matModel", monkeyTransform.modelMatrix());
-            shader->setMat4("u_matView", camera->projectionMatrix() * camera->viewMatrix());
-            shader->setVec3("u_vEyePos", camera->position);
+            if (!shaderGen.hasCode)
+            {
+                // Update positions and transforms
+                shader->use();
+                shader->setMat4("u_matModel", monkeyTransform.modelMatrix());
+                shader->setMat4("u_matView", camera->projectionMatrix()* camera->viewMatrix());
+                shader->setVec3("u_vEyePos", camera->position);
 
-            // Draw the monkey
-            model->draw();
+                // Draw the monkey
+                model->draw();
+            }
+            else {
+                shaderGen.generatedShader->use();
+                shaderGen.generatedShader->setMat4("u_matModel", monkeyTransform.modelMatrix());
+                shaderGen.generatedShader->setMat4("u_matView", camera->projectionMatrix()* camera->viewMatrix());
+                shaderGen.generatedShader->setVec3("u_vEyePos", camera->position);
+                shaderGen.generatedShader->setFloat("u_sMaterial.nAmbient", material.ambient);
+                shaderGen.generatedShader->setFloat("u_sMaterial.nDiffuse", material.diffuse);
+                shaderGen.generatedShader->setFloat("u_sMaterial.nSpecular", material.specular);
+                shaderGen.generatedShader->setFloat("u_sMaterial.nShininess", material.shininess);
+                shaderGen.generatedShader->setInt("u_texMain", 0);
+                shaderGen.generatedShader->setInt("u_texNormal", 1);
+
+                // Draw the monkey
+                model->draw();
+            }
 
             // Draw IMGUI
             ImGui::Render();
