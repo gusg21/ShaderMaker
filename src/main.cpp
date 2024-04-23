@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
         sm::maker::Window maker{
                 std::vector<sm::maker::PinSpec>{ // inputs
                         {"u_sMaterial.nAmbient",   sm::maker::PinType::FLOAT},
-                        {"u_sMaterial.nDiffuse",   sm::maker::PinType::FLOAT},
+                        {"u_sMater  ial.nDiffuse",   sm::maker::PinType::FLOAT},
                         {"u_sMaterial.nSpecular",  sm::maker::PinType::FLOAT},
                         {"u_sMaterial.nShininess", sm::maker::PinType::FLOAT},
                         {"in_sIn.vPosition",       sm::maker::PinType::VEC3},
@@ -105,6 +105,7 @@ int main(int argc, char *argv[]) {
         };
         ax::NodeEditor::NodeId outputNodeId{};
         std::string generatedCode{};
+        bool shouldUsePostProcess = false;
 
         // Load and bind the textures
         auto *roofColor = new sm::Texture("assets/textures/roof_color.png");
@@ -175,8 +176,18 @@ int main(int argc, char *argv[]) {
                     shaderGen.generatedShader = shaderGen.generateShader(generatedCode);
                     shaderGen.hasCode = true;
                 }
+                ImGui::SameLine();
                 ImGui::Text("Output Node ID: %d", outputNodeId.Get());
-                ImGui::Text("Generated GLSL: %s", generatedCode.c_str());
+                ImGui::Checkbox("Use Postprocess", &shouldUsePostProcess);
+                if (ImGui::CollapsingHeader("Generated GLSL")) {
+                    if (generatedCode.empty()) {
+                        ImGui::Text("No GLSL Generated...");
+                    }
+                    else {
+                        ImGui::Text("%s", generatedCode.c_str());
+                    }
+                }
+                
             }
             ImGui::End();
 
