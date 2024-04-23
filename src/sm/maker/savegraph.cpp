@@ -7,7 +7,7 @@
 
 namespace sm {
     namespace maker {
-        bool savegraph::saveGraphToFile(std::string fileName, Window maker) {
+        bool savegraph::saveGraphToFile(const std::string& fileName, Window& maker) {
             std::ofstream fileOutput;
             fileOutput.open(fileName);
 
@@ -17,6 +17,10 @@ namespace sm {
 
             auto nodes = maker.getNodes();
 
+            size_t id = 1;
+
+            fileOutput << nodes.size() << "\n";
+
             for(size_t i = 0; i < nodes.size(); i++)
             {
                 Node* node = &nodes[i];
@@ -24,17 +28,58 @@ namespace sm {
 
                 fileOutput << nodePos.x << " " << nodePos.y << "\n";
 
-                fileOutput << node->spec << "\n";
+                auto nodeSpecs = maker.getNodeSpecs();
+
+                auto val = std::find(nodeSpecs.begin(), nodeSpecs.end(), *node->spec);
+
+                fileOutput << (val != nodeSpecs.end() ? val - nodeSpecs.begin() : -1) << "\n"; // -1 means not found
+
+                id++;
             }
 
-            fileOutput << "Links\n";
+            fileOutput << maker.getLinks().size() << "\n";
 
             for(Link link : maker.getLinks())
             {
-                fileOutput << link.id.Get() << " " << link.inPin << " " << link.outPin << "\n";
+                //not currently working TODO: fix
+                fileOutput << link.inPin->id.Get() << " " << link.outPin->id.Get() << "\n";
             }
 
             fileOutput.close();
+
+            return true;
+        }
+
+        bool savegraph::loadFileToGraph(const std::string &fileName, Window &maker) {
+            std::ifstream fileInput;
+            fileInput.open(fileName);
+
+            if (fileInput.fail()) {
+                return false;
+            }
+
+            int numNodes;
+            fileInput >> numNodes;
+
+            for(int i = 0; i < numNodes; i++)
+            {
+                float x, y;
+                int32_t specIndex;
+                fileInput >> x >> y >> specIndex;
+
+                maker.createNodeFromSpecAt(maker.getNodeSpecs()[specIndex], ImVec2(x, y));
+            }
+
+            int numLinks;
+            fileInput >> numLinks;
+
+            for(int i = 0; i < numLinks; i++)
+            {
+                int32_t inPinId, outPinId;
+                fileInput >> inPinId >> outPinId;
+
+                maker.createLink(inPinId, outPinId, false);
+            }
 
             return true;
         }

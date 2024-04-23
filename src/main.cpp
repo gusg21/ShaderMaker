@@ -180,6 +180,11 @@ int main(int argc, char *argv[]) {
                 if(ImGui::Button("SAVE SHADER")) {
                     sm::maker::savegraph::saveGraphToFile("temp.txt", maker);
                 }
+
+                if(ImGui::Button("LOAD SHADER")) {
+                    sm::maker::savegraph::loadFileToGraph("temp.txt", maker);
+                }
+
                 ImGui::Text("Output Node ID: %d", outputNodeId.Get());
                 ImGui::Text("Generated GLSL: %s", generatedCode.c_str());
             }

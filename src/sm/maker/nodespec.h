@@ -26,6 +26,10 @@ namespace sm::maker {
                  std::vector<PinSpec> outputs, bool isDataHook = false, bool isInputOnly = false, bool isOutputOnly = false, bool isHidden = false)
                 : name(name), funcName(funcName), inputs(inputs), outputs(outputs), isDataHook(isDataHook),
                   isInputOnly(isInputOnly), isOutputOnly(isOutputOnly), isHidden(isHidden) {}
+
+        bool operator==(const NodeSpec &other) const {
+            return name == other.name && funcName == other.funcName;
+        }
     };
 }
 
