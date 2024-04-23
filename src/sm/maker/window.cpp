@@ -212,6 +212,62 @@ void Window::createNodeFromSpecAt(const NodeSpec &spec, ImVec2 position) {
     ax::NodeEditor::SetNodePosition(node->id, position);
 }
 
+void Window::createNodeFromSpecAtWithId(const NodeSpec &spec, ImVec2 position, uint32_t nodeId){
+    auto idNode = findNodeById(nodeId);
+
+    if(idNode != nullptr) return;
+
+    nodes.emplace_back(nodeId++, spec.name, spec.isDataHook, spec.isInputOnly, spec.isOutputOnly, &spec);
+    Node *node = &nodes.back();
+    for (const PinSpec &pinSpec: spec.inputs) {
+        node->inputs.emplace_back(nodeId++, pinSpec.name, pinSpec.type, node->id, ax::NodeEditor::PinKind::Input);
+    }
+    for (const PinSpec &pinSpec: spec.outputs) {
+        node->outputs.emplace_back(nodeId++, pinSpec.name, pinSpec.type, node->id, ax::NodeEditor::PinKind::Output);
+    }
+
+    ax::NodeEditor::SetNodePosition(node->id, position);
+
+    if(nodeId > nextId) nextId = nodeId + 1;
+}
+
+bool Window::createLink(const ax::NodeEditor::PinId startPinId, const ax::NodeEditor::PinId endPinId, const bool needsAcceptance) {
+// Determine which pin is Input and which is Output
+    const Pin *inPin;
+    const Pin *outPin;
+    const Pin *startPin = findPinById(startPinId);
+    const Pin *endPin = findPinById(endPinId);
+
+    if(startPin == nullptr || endPin == nullptr) return false;
+
+    if (startPin->kind == ax::NodeEditor::PinKind::Input) {
+        inPin = startPin;
+        outPin = endPin;
+    } else {
+        inPin = endPin;
+        outPin = startPin;
+    }
+
+    // Make sure we're connecting input to output and the types are compatible
+    bool isInToOut = inPin->kind != outPin->kind;
+    bool areTypesCompat = canCastFrom(outPin->type, inPin->type);
+    if (isInToOut && areTypesCompat) {
+        // Since we accepted new link, lets add one to our list of links.
+        if (needsAcceptance && ax::NodeEditor::AcceptNewItem()) {
+            printf("link from %d to %d\n", outPin->id.Get(), inPin->id.Get());
+            links.emplace_back(nextId++, inPin, outPin);
+            printf("link from %d to %d\n", outPin->id.Get(), inPin->id.Get());
+        } else if(!needsAcceptance){
+            printf("link from %d to %d\n", outPin->id.Get(), inPin->id.Get());
+            links.emplace_back(nextId++, inPin, outPin);
+            printf("link from %d to %d\n", outPin->id.Get(), inPin->id.Get());
+        }
+        return true;
+    }
+
+    return false;
+}
+
 void Window::doGui() {
     ImGui::Begin("Shader Maker");
     {
@@ -247,28 +303,7 @@ void Window::doGui() {
                 if (ax::NodeEditor::QueryNewLink(&startPinId, &endPinId)) {
                     if (startPinId && endPinId) // both are valid, let's accept link
                     {
-                        // Determine which pin is Input and which is Output
-                        const Pin *inPin;
-                        const Pin *outPin;
-                        const Pin *startPin = findPinById(startPinId);
-                        const Pin *endPin = findPinById(endPinId);
-                        if (startPin->kind == ax::NodeEditor::PinKind::Input) {
-                            inPin = startPin;
-                            outPin = endPin;
-                        } else {
-                            inPin = endPin;
-                            outPin = startPin;
-                        }
-
-                        // Make sure we're connecting input to output and the types are compatible
-                        bool isInToOut = inPin->kind != outPin->kind;
-                        bool areTypesCompat = canCastFrom(outPin->type, inPin->type);
-                        if (isInToOut && areTypesCompat && ax::NodeEditor::AcceptNewItem()) {
-                            // Since we accepted new link, lets add one to our list of links.
-                            printf("link from %d to %d\n", outPin->id.Get(), inPin->id.Get());
-                            links.emplace_back(nextId++, inPin, outPin);
-                            printf("link from %d to %d\n", outPin->id.Get(), inPin->id.Get());
-                        }
+                        createLink(startPinId, endPinId, true);
                     } else {
                         ax::NodeEditor::RejectNewItem();
                     }
@@ -619,6 +654,8 @@ const Node *Window::findNodeById(ax::NodeEditor::NodeId id) const {
     for (size_t i = 0; i < nodes.size(); i++) {
         if (nodes[i].id.Get() == id.Get()) return &nodes[i];
     }
+
+    return nullptr;
 }
 
 const Link *Window::findLinkEndingAtId(ax::NodeEditor::PinId id) const {
@@ -671,4 +708,16 @@ std::string Window::composeCodeForNodeId(const ax::NodeEditor::NodeId nodeId) co
     }
 
     return contents;
+}
+
+const std::vector<Node> Window::getNodes() {
+    return nodes;
+}
+
+const std::vector<NodeSpec> Window::getNodeSpecs() {
+    return nodeSpecs;
+}
+
+const std::vector<Link> Window::getLinks() {
+    return links;
 }
