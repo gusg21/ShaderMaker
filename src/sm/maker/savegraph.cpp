@@ -41,7 +41,7 @@ namespace sm {
 
             for(Link link : maker.getLinks())
             {
-                //not currently working TODO: fix
+                //TODO: ensure links aren't pointing to potentially wrong id on initial creation
                 fileOutput << link.inPin->id.Get() << " " << link.outPin->id.Get() << "\n";
             }
 
