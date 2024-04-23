@@ -177,13 +177,6 @@ int main(int argc, char *argv[]) {
                     shaderGen.generatedShader = shaderGen.generateShader(generatedCode);
                     shaderGen.hasCode = true;
                 }
-                if(ImGui::Button("SAVE SHADER")) {
-                    sm::maker::savegraph::saveGraphToFile("temp.txt", maker);
-                }
-
-                if(ImGui::Button("LOAD SHADER")) {
-                    sm::maker::savegraph::loadFileToGraph("temp.txt", maker);
-                }
 
                 ImGui::SameLine();
 
@@ -197,7 +190,14 @@ int main(int argc, char *argv[]) {
                         ImGui::Text("%s", generatedCode.c_str());
                     }
                 }
-                
+
+                if(ImGui::Button("SAVE SHADER")) {
+                    sm::maker::savegraph::saveGraphToFile("temp.txt", maker);
+                }
+
+                if(ImGui::Button("LOAD SHADER")) {
+                    sm::maker::savegraph::loadFileToGraph("temp.txt", maker);
+                }
             }
             ImGui::End();
 
