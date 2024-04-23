@@ -23,6 +23,8 @@ namespace sm {
 
             void createNodeFromSpecAt(const NodeSpec &spec, ImVec2 position);
 
+            void createNodeFromSpecAtWithId(const NodeSpec &spec, ImVec2 position, uint32_t nodeId);
+
             bool createLink(const ax::NodeEditor::PinId startPinId, const ax::NodeEditor::PinId endPinId, const bool needsAcceptance = true);
 
             void getPinTypeTexCoords(PinType type, ImVec2 *uv0, ImVec2 *uv1);

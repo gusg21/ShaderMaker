@@ -17,8 +17,6 @@ namespace sm {
 
             auto nodes = maker.getNodes();
 
-            size_t id = 1;
-
             fileOutput << nodes.size() << "\n";
 
             for(size_t i = 0; i < nodes.size(); i++)
@@ -33,8 +31,9 @@ namespace sm {
                 auto val = std::find(nodeSpecs.begin(), nodeSpecs.end(), *node->spec);
 
                 fileOutput << (val != nodeSpecs.end() ? val - nodeSpecs.begin() : -1) << "\n"; // -1 means not found
+                fileOutput << node->id.Get() << "\n";
 
-                id++;
+                //fileOutput << node->data << "\n";
             }
 
             fileOutput << maker.getLinks().size() << "\n";
@@ -65,9 +64,14 @@ namespace sm {
             {
                 float x, y;
                 int32_t specIndex;
-                fileInput >> x >> y >> specIndex;
+                int32_t nodeId;
+                //char nodeData[256];
+                fileInput >> x >> y >> specIndex >> nodeId;
+                if(specIndex != -1)
+                    maker.createNodeFromSpecAtWithId(maker.getNodeSpecs()[specIndex], ImVec2(x, y), nodeId);
 
-                maker.createNodeFromSpecAt(maker.getNodeSpecs()[specIndex], ImVec2(x, y));
+                //fileInput.getline(nodeData, 256, '\n');
+                //maker.findNodeById(nodeId)->data = nodeData;
             }
 
             int numLinks;

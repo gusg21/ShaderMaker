@@ -212,12 +212,34 @@ void Window::createNodeFromSpecAt(const NodeSpec &spec, ImVec2 position) {
     ax::NodeEditor::SetNodePosition(node->id, position);
 }
 
+void Window::createNodeFromSpecAtWithId(const NodeSpec &spec, ImVec2 position, uint32_t nodeId){
+    auto idNode = findNodeById(nodeId);
+
+    if(idNode != nullptr) return;
+
+    nodes.emplace_back(nodeId++, spec.name, spec.isDataHook, spec.isInputOnly, spec.isOutputOnly, &spec);
+    Node *node = &nodes.back();
+    for (const PinSpec &pinSpec: spec.inputs) {
+        node->inputs.emplace_back(nodeId++, pinSpec.name, pinSpec.type, node->id, ax::NodeEditor::PinKind::Input);
+    }
+    for (const PinSpec &pinSpec: spec.outputs) {
+        node->outputs.emplace_back(nodeId++, pinSpec.name, pinSpec.type, node->id, ax::NodeEditor::PinKind::Output);
+    }
+
+    ax::NodeEditor::SetNodePosition(node->id, position);
+
+    if(nodeId > nextId) nextId = nodeId + 1;
+}
+
 bool Window::createLink(const ax::NodeEditor::PinId startPinId, const ax::NodeEditor::PinId endPinId, const bool needsAcceptance) {
 // Determine which pin is Input and which is Output
     const Pin *inPin;
     const Pin *outPin;
     const Pin *startPin = findPinById(startPinId);
     const Pin *endPin = findPinById(endPinId);
+
+    if(startPin == nullptr || endPin == nullptr) return false;
+
     if (startPin->kind == ax::NodeEditor::PinKind::Input) {
         inPin = startPin;
         outPin = endPin;
@@ -632,6 +654,8 @@ const Node *Window::findNodeById(ax::NodeEditor::NodeId id) const {
     for (size_t i = 0; i < nodes.size(); i++) {
         if (nodes[i].id.Get() == id.Get()) return &nodes[i];
     }
+
+    return nullptr;
 }
 
 const Link *Window::findLinkEndingAtId(ax::NodeEditor::PinId id) const {
