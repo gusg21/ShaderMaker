@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
         sm::maker::Window maker{
                 std::vector<sm::maker::PinSpec>{ // inputs
                         {"u_sMaterial.nAmbient",   sm::maker::PinType::FLOAT},
-                        {"u_sMater  ial.nDiffuse",   sm::maker::PinType::FLOAT},
+                        {"u_sMaterial.nDiffuse",   sm::maker::PinType::FLOAT},
                         {"u_sMaterial.nSpecular",  sm::maker::PinType::FLOAT},
                         {"u_sMaterial.nShininess", sm::maker::PinType::FLOAT},
                         {"in_sIn.vPosition",       sm::maker::PinType::VEC3},
