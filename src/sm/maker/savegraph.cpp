@@ -33,12 +33,13 @@ namespace sm {
                 fileOutput << (val != nodeSpecs.end() ? val - nodeSpecs.begin() : -1) << "\n"; // -1 means not found
                 fileOutput << node->id.Get() << "\n";
 
-                for(char c : node->data)
-                {
-                    fileOutput << c;
+                if (node->isDataHook) {
+                    for (char c: node->data) {
+                        fileOutput << c;
+                    }
+                    fileOutput << "\n";
                 }
 
-                fileOutput << "\n";
                 //fileOutput << node->data << "\n";
             }
 
@@ -68,10 +69,10 @@ namespace sm {
 
             for(int i = 0; i < numNodes; i++)
             {
-                float x, y;
-                int32_t specIndex;
-                int32_t nodeId;
-                char nodeData[256];
+                float x = 0, y = 0;
+                int32_t specIndex = -1;
+                int32_t nodeId = -1;
+                std::string nodeData = "";
                 fileInput >> x >> y >> specIndex >> nodeId;
 
                 Node* node = nullptr;
@@ -79,11 +80,15 @@ namespace sm {
                 if(specIndex != -1)
                     node = maker.createNodeFromSpecAtWithId(maker.getNodeSpecs()[specIndex], ImVec2(x, y), nodeId);
 
-                fileInput.getline(nodeData, 256, '\n');
-                fileInput.getline(nodeData, 256, '\n');
+                if (node != nullptr && node->isDataHook) {
+                    std::getline(fileInput, nodeData);
+                    std::getline(fileInput, nodeData);
 
-                if(node != nullptr)
-                    strcpy_s(node->data, nodeData);
+                    for(int index = 0; index < nodeData.size(); index++)
+                    {
+                        node->data[index] = nodeData[index];
+                    }
+                }
 
             }
 
