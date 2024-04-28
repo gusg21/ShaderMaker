@@ -126,7 +126,7 @@ int main(int argc, char *argv[]) {
         shader->setInt("u_texNormal", 1);
 
         //Shader generator
-        sm::ShaderGenerator shaderGen("assets/test.vert", "assets/template.frag", "assets/test.frag");
+        sm::ShaderGenerator shaderGen("assets/test.vert", "assets/template.frag");
 
         // Camera
         auto *camera = new sm::Camera();

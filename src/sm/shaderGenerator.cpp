@@ -12,57 +12,45 @@
 #include <glm/gtc/type_ptr.hpp>
 
 namespace sm {
-	ShaderGenerator::ShaderGenerator(const std::string& vertex, const std::string& fragment, const std::string& fileName) {
+	ShaderGenerator::ShaderGenerator(const std::string& vertex, const std::string& fragment) {
+        //Saves template file name in order to be able to read from the template later
         templateFile = fragment;
         
+        //Reads from the vertex file and puts it into a string stream
         std::ifstream vertexStream(vertex);
         if (!vertexStream) {
             SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Couldn't read from %s", vertex.c_str());
         }
-        std::stringstream vertexBuffer;
-        vertexBuffer << vertexStream.rdbuf();
+        vertSStream << vertexStream.rdbuf();
 
-		std::ifstream fragmentStream(fragment);
-        if (!fragmentStream) {
-            SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Couldn't read from %s", fragment.c_str());
-        }
-        std::stringstream fragmentBuffer;
-        fragmentBuffer << fragmentStream.rdbuf();
-
-        vertCode = vertexBuffer.str();
-        fragCode = fragmentBuffer.str();
-        fragFile = fileName;
-
+        //Loads placeholder shader
 		generatedShader = sm::loadShader(vertex, fragment);
 	}
 
 	sm::Shader* ShaderGenerator::generateShader(std::string& outputCode) {
         sortCode(outputCode);
 
-        std::ifstream fragmentStream(fragFile);
-        if (!fragmentStream) {
-            SDL_LogCritical(SDL_LOG_CATEGORY_ERROR, "Couldn't read from %s", fragFile.c_str());
-        }
-        std::stringstream fragmentBuffer;
-        fragmentBuffer << fragmentStream.rdbuf();
-
-        return new Shader(vertCode, fragmentBuffer.str());
+        return new Shader(vertSStream.str(), fragSStream.str());
 	}
 
 	void ShaderGenerator::sortCode(std::string& outputCode) {
-        std::ifstream in(templateFile);
-        std::ofstream f(fragFile);
+        std::ifstream in(templateFile); //Reads from template file
+        fragSStream.str(""); //Clears fragment string stream
+        std::ostream& outStream = fragSStream; //sets out stream to fragment stream
+        
         while (!in.eof())
         {
             std::string line;
 
             std::getline(in, line);
+            //gets line, if the line is main then our generated output code gets placed into main in the frag shader code, 
+            //otherwise the next line is simply written to the fragment shader
             if (line == "void main() {") {
-                f << line << std::endl;
-                f << outputCode << std::endl;
+                outStream << line << std::endl;
+                outStream << outputCode << std::endl;
             }
             else {
-                f << line << std::endl;
+                outStream << line << std::endl;
             }
         }
 	}
