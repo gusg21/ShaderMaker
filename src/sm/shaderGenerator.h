@@ -11,12 +11,13 @@ namespace sm{
 	public:
 		ShaderGenerator(const std::string& vertex, const std::string& fragment);
 
-		sm::Shader* generateShader(std::string& outputCode);
+		sm::Shader* generateShaderLit(std::string& outputCode);
+		sm::Shader* generateShaderPost(std::string& outputCode);
 		sm::Shader* generatedShader;
 		bool hasCode = false;
 
 	private:
-		void sortCode(std::string& outputCode);
+		void compileFragCode(std::string& outputCode, bool isLit);
 		std::string templateFile;
 		std::stringstream vertSStream;
 		std::stringstream fragSStream;

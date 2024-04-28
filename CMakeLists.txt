@@ -24,6 +24,7 @@ add_executable(ShaderMaker
         "src/main.cpp"
         "src/sm/shader.cpp"
         "src/sm/shadergenerator.cpp"
+        "src/sm/framebuffer.cpp"
         "src/sm/model.cpp"
         "src/sm/model.h"
         "src/sm/mesh.cpp"

@@ -12,6 +12,7 @@
 #include "sm/transform.h"
 #include "sm/texture.h"
 #include "sm/shaderGenerator.h"
+#include "sm/framebuffer.h"
 
 #define SCREEN_WIDTH 1600
 #define SCREEN_HEIGHT 900
@@ -125,8 +126,9 @@ int main(int argc, char *argv[]) {
         shader->setInt("u_texMain", 0);
         shader->setInt("u_texNormal", 1);
 
-        //Shader generator
-        sm::ShaderGenerator shaderGen("assets/test.vert", "assets/template.frag");
+        //Shader Generators
+        sm::ShaderGenerator shaderGenLit("assets/lit.vert", "assets/litTemplate.frag"); //for lit vert and frag
+        sm::ShaderGenerator shaderGenPost("assets/postProcess.vert", "assets/postTemplate.frag"); //for post process vert and frag
 
         // Camera
         auto *camera = new sm::Camera();
@@ -138,6 +140,11 @@ int main(int argc, char *argv[]) {
         // Monkey model
         auto *model = new sm::Model("assets/models/Suzanne.fbx");
         sm::Transform monkeyTransform;
+
+        //Framebuffer
+        sm::Framebuffer framebuffer = sm::createFramebuffer(SCREEN_WIDTH, SCREEN_HEIGHT, GL_RGB);
+        unsigned int dummyVAO;
+        glCreateVertexArrays(1, &dummyVAO);
 
         // Timing variables
         uint64_t lastFrameTicks = SDL_GetTicks64();
@@ -174,8 +181,16 @@ int main(int argc, char *argv[]) {
                 if (ImGui::Button("MAKE NEW SHADER")) {
                     outputNodeId = maker.getOutputNodeId();
                     generatedCode = maker.composeCodeForNodeId(outputNodeId);
-                    shaderGen.generatedShader = shaderGen.generateShader(generatedCode);
-                    shaderGen.hasCode = true;
+
+                    //If the post process box isn't checked make a lit shader
+                    if (!shouldUsePostProcess) {
+                        shaderGenLit.generatedShader = shaderGenLit.generateShaderLit(generatedCode);
+                        shaderGenLit.hasCode = true;
+                    } 
+                    else if (shouldUsePostProcess) { //If it is checked make a post process shader
+                        shaderGenPost.generatedShader = shaderGenPost.generateShaderPost(generatedCode);
+                        shaderGenPost.hasCode = true;
+                    }
                 }
 
                 ImGui::SameLine();
@@ -200,16 +215,23 @@ int main(int argc, char *argv[]) {
                 }
             }
             ImGui::End();
+            //END OF UI
 
-            // Spin da monkey
-            monkeyTransform.rotation = glm::rotate(monkeyTransform.rotation, 1.f * deltaTime, glm::vec3(0, 1, 0));
 
             // DRAWING //
+            glBindFramebuffer(GL_FRAMEBUFFER, framebuffer.fbo);
             glViewport(0, 0, SCREEN_WIDTH, SCREEN_HEIGHT);
             glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-            if (!shaderGen.hasCode)
+            // Spin da monkey
+            monkeyTransform.rotation = glm::rotate(monkeyTransform.rotation, 1.f * deltaTime, glm::vec3(0, 1, 0));
+
+            roofColor->bindToTextureUnit(0);
+            roofNormal->bindToTextureUnit(1);
+
+            //If shader generator hasn't generated code yet we use the default
+            if (!shaderGenLit.hasCode)
             {
                 // Update positions and transforms
                 shader->use();
@@ -221,20 +243,31 @@ int main(int argc, char *argv[]) {
                 model->draw();
             }
             else {
-                shaderGen.generatedShader->use();
-                shaderGen.generatedShader->setMat4("u_matModel", monkeyTransform.modelMatrix());
-                shaderGen.generatedShader->setMat4("u_matView", camera->projectionMatrix()* camera->viewMatrix());
-                shaderGen.generatedShader->setVec3("u_vEyePos", camera->position);
-                shaderGen.generatedShader->setFloat("u_sMaterial.nAmbient", material.ambient);
-                shaderGen.generatedShader->setFloat("u_sMaterial.nDiffuse", material.diffuse);
-                shaderGen.generatedShader->setFloat("u_sMaterial.nSpecular", material.specular);
-                shaderGen.generatedShader->setFloat("u_sMaterial.nShininess", material.shininess);
-                shaderGen.generatedShader->setInt("u_texMain", 0);
-                shaderGen.generatedShader->setInt("u_texNormal", 1);
+                shaderGenLit.generatedShader->use();
+                shaderGenLit.generatedShader->setMat4("u_matModel", monkeyTransform.modelMatrix());
+                shaderGenLit.generatedShader->setMat4("u_matView", camera->projectionMatrix()* camera->viewMatrix());
+                shaderGenLit.generatedShader->setVec3("u_vEyePos", camera->position);
+                shaderGenLit.generatedShader->setFloat("u_sMaterial.nAmbient", material.ambient);
+                shaderGenLit.generatedShader->setFloat("u_sMaterial.nDiffuse", material.diffuse);
+                shaderGenLit.generatedShader->setFloat("u_sMaterial.nSpecular", material.specular);
+                shaderGenLit.generatedShader->setFloat("u_sMaterial.nShininess", material.shininess);
+                shaderGenLit.generatedShader->setInt("u_texMain", 0);
+                shaderGenLit.generatedShader->setInt("u_texNormal", 1);
 
                 // Draw the monkey
                 model->draw();
             }
+
+            //Postprocessing, second render pass to screen
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            glClearColor(0.25f, 0.25f, 0.25f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+            shaderGenPost.generatedShader->use();
+
+            glBindTextureUnit(0, framebuffer.colorBuffer[0]);
+            glBindVertexArray(dummyVAO);
+            glDrawArrays(GL_TRIANGLES, 0, 3);
 
             // Draw IMGUI
             ImGui::Render();

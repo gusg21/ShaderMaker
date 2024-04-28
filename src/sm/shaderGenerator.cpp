@@ -27,30 +27,60 @@ namespace sm {
 		generatedShader = sm::loadShader(vertex, fragment);
 	}
 
-	sm::Shader* ShaderGenerator::generateShader(std::string& outputCode) {
-        sortCode(outputCode);
+	sm::Shader* ShaderGenerator::generateShaderLit(std::string& outputCode) {
+        compileFragCode(outputCode, true);
 
         return new Shader(vertSStream.str(), fragSStream.str());
 	}
 
-	void ShaderGenerator::sortCode(std::string& outputCode) {
+    sm::Shader* ShaderGenerator::generateShaderPost(std::string& outputCode) {
+        compileFragCode(outputCode, false);
+
+        return new Shader(vertSStream.str(), fragSStream.str());
+    }
+
+	void ShaderGenerator::compileFragCode(std::string& outputCode, bool isLit) {
         std::ifstream in(templateFile); //Reads from template file
         fragSStream.str(""); //Clears fragment string stream
         std::ostream& outStream = fragSStream; //sets out stream to fragment stream
         
-        while (!in.eof())
-        {
-            std::string line;
+        if (isLit) {
+            //If this shader is lit then we know to not override anything in main
+            while (!in.eof())
+            {
+                std::string line;
 
-            std::getline(in, line);
-            //gets line, if the line is main then our generated output code gets placed into main in the frag shader code, 
-            //otherwise the next line is simply written to the fragment shader
-            if (line == "void main() {") {
-                outStream << line << std::endl;
-                outStream << outputCode << std::endl;
+                std::getline(in, line);
+                //gets line, if the line is main then our generated output code gets placed into main in the frag shader code, 
+                //otherwise the next line is simply written to the fragment shader
+                if (line == "void main() {") {
+                    outStream << line << std::endl;
+                    outStream << outputCode << std::endl;
+                }
+                else {
+                    outStream << line << std::endl;
+                }
             }
-            else {
-                outStream << line << std::endl;
+        }
+        else if (!isLit) {
+            //If this shader is post process instead of lit then we override the default code.
+            while (!in.eof())
+            {
+                std::string line;
+
+                std::getline(in, line);
+                //gets line, if the line is main then our generated output code gets placed into main in the frag shader code, 
+                //otherwise the next line is simply written to the fragment shader
+                if (line == "void main() {") {
+                    outStream << line << std::endl;
+                    std::getline(in, line);
+                    std::getline(in, line);
+                    std::getline(in, line);
+                    outStream << outputCode << std::endl;
+                }
+                else {
+                    outStream << line << std::endl;
+                }
             }
         }
 	}
