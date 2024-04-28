@@ -74,7 +74,7 @@ namespace sm {
                 char nodeData[256];
                 fileInput >> x >> y >> specIndex >> nodeId;
 
-                Node* node;
+                Node* node = nullptr;
 
                 if(specIndex != -1)
                     node = maker.createNodeFromSpecAtWithId(maker.getNodeSpecs()[specIndex], ImVec2(x, y), nodeId);
@@ -83,9 +83,8 @@ namespace sm {
                 fileInput.getline(nodeData, 256, '\n');
 
                 if(node != nullptr)
-                    std::strcpy(node->data, nodeData); //TODO: remove this()
-                //fileInput.getline(nodeData, 256, '\n');
-                //maker.findNodeById(nodeId)->data = nodeData;
+                    strcpy_s(node->data, nodeData);
+
             }
 
             int numLinks;
