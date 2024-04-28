@@ -33,6 +33,12 @@ namespace sm {
                 fileOutput << (val != nodeSpecs.end() ? val - nodeSpecs.begin() : -1) << "\n"; // -1 means not found
                 fileOutput << node->id.Get() << "\n";
 
+                for(char c : node->data)
+                {
+                    fileOutput << c;
+                }
+
+                fileOutput << "\n";
                 //fileOutput << node->data << "\n";
             }
 
@@ -65,11 +71,19 @@ namespace sm {
                 float x, y;
                 int32_t specIndex;
                 int32_t nodeId;
-                //char nodeData[256];
+                char nodeData[256];
                 fileInput >> x >> y >> specIndex >> nodeId;
-                if(specIndex != -1)
-                    maker.createNodeFromSpecAtWithId(maker.getNodeSpecs()[specIndex], ImVec2(x, y), nodeId);
 
+                Node* node;
+
+                if(specIndex != -1)
+                    node = maker.createNodeFromSpecAtWithId(maker.getNodeSpecs()[specIndex], ImVec2(x, y), nodeId);
+
+                fileInput.getline(nodeData, 256, '\n');
+                fileInput.getline(nodeData, 256, '\n');
+
+                if(node != nullptr)
+                    std::strcpy(node->data, nodeData); //TODO: remove this()
                 //fileInput.getline(nodeData, 256, '\n');
                 //maker.findNodeById(nodeId)->data = nodeData;
             }

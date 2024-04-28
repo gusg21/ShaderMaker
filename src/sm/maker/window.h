@@ -19,11 +19,11 @@ namespace sm {
 
             void doGui();
 
-            void createNodeFromSpec(const NodeSpec &spec);
+            Node* createNodeFromSpec(const NodeSpec &spec);
 
-            void createNodeFromSpecAt(const NodeSpec &spec, ImVec2 position);
+            Node* createNodeFromSpecAt(const NodeSpec &spec, ImVec2 position);
 
-            void createNodeFromSpecAtWithId(const NodeSpec &spec, ImVec2 position, uint32_t nodeId);
+            Node* createNodeFromSpecAtWithId(const NodeSpec &spec, ImVec2 position, uint32_t nodeId);
 
             bool createLink(const ax::NodeEditor::PinId startPinId, const ax::NodeEditor::PinId endPinId, const bool needsAcceptance = true);
 

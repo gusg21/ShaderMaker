@@ -188,7 +188,7 @@ Window::~Window() {
     ax::NodeEditor::DestroyEditor(context);
 }
 
-void Window::createNodeFromSpec(const NodeSpec &spec) {
+Node* Window::createNodeFromSpec(const NodeSpec &spec) {
     nodes.emplace_back(nextId++, spec.name, spec.isDataHook, spec.isInputOnly, spec.isOutputOnly, &spec);
     Node *node = &nodes.back();
     for (const PinSpec &pinSpec: spec.inputs) {
@@ -197,9 +197,11 @@ void Window::createNodeFromSpec(const NodeSpec &spec) {
     for (const PinSpec &pinSpec: spec.outputs) {
         node->outputs.emplace_back(nextId++, pinSpec.name, pinSpec.type, node->id, ax::NodeEditor::PinKind::Output);
     }
+
+    return node;
 }
 
-void Window::createNodeFromSpecAt(const NodeSpec &spec, ImVec2 position) {
+Node* Window::createNodeFromSpecAt(const NodeSpec &spec, ImVec2 position) {
     nodes.emplace_back(nextId++, spec.name, spec.isDataHook, spec.isInputOnly, spec.isOutputOnly, &spec);
     Node *node = &nodes.back();
     for (const PinSpec &pinSpec: spec.inputs) {
@@ -210,12 +212,13 @@ void Window::createNodeFromSpecAt(const NodeSpec &spec, ImVec2 position) {
     }
 
     ax::NodeEditor::SetNodePosition(node->id, position);
+    return node;
 }
 
-void Window::createNodeFromSpecAtWithId(const NodeSpec &spec, ImVec2 position, uint32_t nodeId){
+Node* Window::createNodeFromSpecAtWithId(const NodeSpec &spec, ImVec2 position, uint32_t nodeId){
     auto idNode = findNodeById(nodeId);
 
-    if(idNode != nullptr) return;
+    if(idNode != nullptr) return nullptr;
 
     nodes.emplace_back(nodeId++, spec.name, spec.isDataHook, spec.isInputOnly, spec.isOutputOnly, &spec);
     Node *node = &nodes.back();
@@ -229,6 +232,7 @@ void Window::createNodeFromSpecAtWithId(const NodeSpec &spec, ImVec2 position, u
     ax::NodeEditor::SetNodePosition(node->id, position);
 
     if(nodeId > nextId) nextId = nodeId + 1;
+    return node;
 }
 
 bool Window::createLink(const ax::NodeEditor::PinId startPinId, const ax::NodeEditor::PinId endPinId, const bool needsAcceptance) {
