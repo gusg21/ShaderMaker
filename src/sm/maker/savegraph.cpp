@@ -39,13 +39,11 @@ namespace sm {
                     }
                     fileOutput << "\n";
                 }
-
-                //fileOutput << node->data << "\n";
             }
 
             fileOutput << maker.getLinks().size() << "\n";
 
-            for(Link link : maker.getLinks())
+            for(const Link& link : maker.getLinks())
             {
                 //TODO: ensure links aren't pointing to potentially wrong id on initial creation
                 fileOutput << link.inPin->id.Get() << " " << link.outPin->id.Get() << "\n";
@@ -78,7 +76,7 @@ namespace sm {
                 Node* node = nullptr;
 
                 if(specIndex != -1)
-                    node = maker.createNodeFromSpecAtWithId(maker.getNodeSpecs()[specIndex], ImVec2(x, y), nodeId);
+                    node = maker.createNodeFromSpecAtWithId(specIndex, ImVec2(x, y), nodeId);
 
                 if (node != nullptr && node->isDataHook) {
                     std::getline(fileInput, nodeData);

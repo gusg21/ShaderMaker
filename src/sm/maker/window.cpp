@@ -215,12 +215,14 @@ Node* Window::createNodeFromSpecAt(const NodeSpec &spec, ImVec2 position) {
     return node;
 }
 
-Node* Window::createNodeFromSpecAtWithId(const NodeSpec &spec, ImVec2 position, uint32_t nodeId){
+Node* Window::createNodeFromSpecAtWithId(const int specIndex, ImVec2 position, uint32_t nodeId){
     auto idNode = findNodeById(nodeId);
 
     if(idNode != nullptr) return nullptr;
 
-    nodes.emplace_back(nodeId++, spec.name, spec.isDataHook, spec.isInputOnly, spec.isOutputOnly, &spec);
+    NodeSpec spec = getNodeSpecs()[specIndex];
+
+    nodes.emplace_back(nodeId++, spec.name, spec.isDataHook, spec.isInputOnly, spec.isOutputOnly, &getNodeSpecs()[specIndex]);
     Node *node = &nodes.back();
     for (const PinSpec &pinSpec: spec.inputs) {
         node->inputs.emplace_back(nodeId++, pinSpec.name, pinSpec.type, node->id, ax::NodeEditor::PinKind::Input);
@@ -718,7 +720,7 @@ const std::vector<Node> Window::getNodes() {
     return nodes;
 }
 
-const std::vector<NodeSpec> Window::getNodeSpecs() {
+const std::vector<NodeSpec>& Window::getNodeSpecs() {
     return nodeSpecs;
 }
 

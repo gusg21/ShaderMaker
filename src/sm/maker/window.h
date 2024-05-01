@@ -23,7 +23,7 @@ namespace sm {
 
             Node* createNodeFromSpecAt(const NodeSpec &spec, ImVec2 position);
 
-            Node* createNodeFromSpecAtWithId(const NodeSpec &spec, ImVec2 position, uint32_t nodeId);
+            Node* createNodeFromSpecAtWithId(const int specIndex, ImVec2 position, uint32_t nodeId);
 
             bool createLink(const ax::NodeEditor::PinId startPinId, const ax::NodeEditor::PinId endPinId, const bool needsAcceptance = true);
 
@@ -44,7 +44,7 @@ namespace sm {
             std::string composeCodeForNodeId(const ax::NodeEditor::NodeId node) const;
 
             const std::vector<Node> getNodes();
-            const std::vector<NodeSpec> getNodeSpecs();
+            const std::vector<NodeSpec>& getNodeSpecs();
             const std::vector<Link> getLinks();
 
         private:
