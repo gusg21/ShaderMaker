@@ -97,6 +97,7 @@ int main(int argc, char *argv[]) {
                         {"in_sIn.matTBN",          sm::maker::PinType::MAT3},
                         {"u_texMain",              sm::maker::PinType::SAMPLER2D},
                         {"u_texNormal",            sm::maker::PinType::SAMPLER2D},
+                        {"u_vEyePos",              sm::maker::PinType::VEC3},
                         {"u_vLightDirection",      sm::maker::PinType::VEC3},
                         {"u_vLightColor",          sm::maker::PinType::VEC3},
                         {"u_vAmbientColor",        sm::maker::PinType::VEC3}

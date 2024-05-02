@@ -79,6 +79,22 @@ Window::Window(const std::vector<PinSpec> &shaderInputs, const std::vector<PinSp
                     PinSpec{"Value", PinType::VEC4}
             }
     );
+    nodeSpecs.emplace_back("Compose (Vec3->Vec4)", "vec4",
+        std::vector<PinSpec>{
+        PinSpec{ "X, Y, Z", PinType::VEC3 },
+            PinSpec{ "W", PinType::FLOAT },
+    }, std::vector<PinSpec>{
+        PinSpec{ "Value", PinType::VEC4 }
+    }
+    );
+    nodeSpecs.emplace_back("Add (Vec3)", "add",
+        std::vector<PinSpec>{
+        PinSpec{ "A", PinType::VEC3 },
+            PinSpec{ "B", PinType::VEC3 }
+    }, std::vector<PinSpec>{
+        PinSpec{ "Value", PinType::VEC3 }
+    }
+    );
     nodeSpecs.emplace_back("Multiply (Float)", "multiply",
         std::vector<PinSpec>{
         PinSpec{ "A", PinType::FLOAT },
@@ -87,12 +103,52 @@ Window::Window(const std::vector<PinSpec> &shaderInputs, const std::vector<PinSp
         PinSpec{ "Value", PinType::FLOAT }
     }
     );
+    nodeSpecs.emplace_back("Multiply (Vec3, Float)", "multiply",
+        std::vector<PinSpec>{
+        PinSpec{ "A", PinType::VEC3 },
+            PinSpec{ "B", PinType::FLOAT }
+    }, std::vector<PinSpec>{
+        PinSpec{ "Value", PinType::VEC3 }
+    }
+    );
+    nodeSpecs.emplace_back("Multiply (Vec3)", "multiply",
+        std::vector<PinSpec>{
+        PinSpec{ "A", PinType::VEC3 },
+            PinSpec{ "B", PinType::VEC3}
+    }, std::vector<PinSpec>{
+        PinSpec{ "Value", PinType::VEC3 }
+    }
+    );
+    nodeSpecs.emplace_back("Multiply (Mat3, Vec3)", "multiply",
+        std::vector<PinSpec>{
+        PinSpec{ "A", PinType::MAT3 },
+            PinSpec{ "B", PinType::VEC3 }
+    }, std::vector<PinSpec>{
+        PinSpec{ "Value", PinType::VEC3 }
+    }
+    );
     nodeSpecs.emplace_back("Subtract (Float)", "subtract",
         std::vector<PinSpec>{
         PinSpec{ "A", PinType::FLOAT },
             PinSpec{ "B", PinType::FLOAT }
     }, std::vector<PinSpec>{
         PinSpec{ "Value", PinType::FLOAT }
+    }
+    );
+    nodeSpecs.emplace_back("Subtract (Vec3)", "subtract",
+        std::vector<PinSpec>{
+        PinSpec{ "A", PinType::VEC3 },
+            PinSpec{ "B", PinType::VEC3 }
+    }, std::vector<PinSpec>{
+        PinSpec{ "Value", PinType::VEC3 }
+    }
+    );
+    nodeSpecs.emplace_back("Subtract (Vec3, Float)", "subtract",
+        std::vector<PinSpec>{
+        PinSpec{ "A", PinType::VEC3 },
+            PinSpec{ "B", PinType::FLOAT }
+    }, std::vector<PinSpec>{
+        PinSpec{ "Value", PinType::VEC3}
     }
     );
     nodeSpecs.emplace_back("Invert (float)", "invert",
@@ -107,6 +163,30 @@ Window::Window(const std::vector<PinSpec> &shaderInputs, const std::vector<PinSp
         PinSpec{ "Input", PinType::VEC3 },
     }, std::vector<PinSpec>{
         PinSpec{ "Inverted", PinType::VEC3 }
+    }
+    );
+    nodeSpecs.emplace_back("Max (Float)", "max",
+        std::vector<PinSpec>{
+        PinSpec{ "A", PinType::FLOAT },
+            PinSpec{ "B", PinType::FLOAT }
+    }, std::vector<PinSpec>{
+        PinSpec{ "Value", PinType::FLOAT }
+    }
+    );
+    nodeSpecs.emplace_back("Pow (Float)", "pow",
+        std::vector<PinSpec>{
+        PinSpec{ "A", PinType::FLOAT },
+            PinSpec{ "B", PinType::FLOAT }
+    }, std::vector<PinSpec>{
+        PinSpec{ "Value", PinType::FLOAT }
+    }
+    );
+    nodeSpecs.emplace_back("Dot (Vec3)", "dot",
+        std::vector<PinSpec>{
+        PinSpec{ "A", PinType::VEC3 },
+            PinSpec{ "B", PinType::VEC3 }
+    }, std::vector<PinSpec>{
+        PinSpec{ "Value", PinType::FLOAT }
     }
     );
     nodeSpecs.emplace_back("Get .rgb", "get_rgb",
@@ -181,6 +261,14 @@ Window::Window(const std::vector<PinSpec> &shaderInputs, const std::vector<PinSp
                            }, std::vector<PinSpec>{
                     PinSpec{"Value", PinType::INT}
             }
+    );
+    nodeSpecs.emplace_back("Add (Float)", "add",
+        std::vector<PinSpec>{
+        PinSpec{ "A", PinType::FLOAT },
+            PinSpec{ "B", PinType::FLOAT }
+    }, std::vector<PinSpec>{
+        PinSpec{ "Value", PinType::FLOAT }
+    }
     );
 }
 
