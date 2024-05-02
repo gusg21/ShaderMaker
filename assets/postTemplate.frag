@@ -55,8 +55,6 @@ vec3 get_rgb(vec4 vec) {
 }
 
 
-
-
 void main() {
     // CODE GOES HERE
     vec3 color = texture(_ColorBuffer, vUv).rgb;

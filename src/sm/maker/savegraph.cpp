@@ -101,6 +101,8 @@ namespace sm {
                 maker.createLink(inPinId, outPinId, false);
             }
 
+            fileInput.close();
+
             return true;
         }
 

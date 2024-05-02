@@ -45,4 +45,5 @@ void main() {
     vec3 objectColor = texture(u_texMain, in_sIn.vUv).rgb;
 
     out_vColor = vec4(objectColor * lightColor, 1.0);
+    out_vColor = vec4(1.0);
 }
